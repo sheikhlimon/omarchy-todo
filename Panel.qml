@@ -449,21 +449,21 @@ Item {
         Layout.fillWidth: true
         spacing: Style.space(6)
 
-        // To-Do Tab
+        // To-Do Tab (Neutral Charcoal styling)
         Rectangle {
           Layout.fillWidth: true
           Layout.preferredWidth: 0
           Layout.minimumWidth: 0
           height: Style.space(30)
           radius: Style.space(7)
-          color: root.activeTab === "todo" ? Style.tint(Color.blue, 0.18) : Style.tint(root.foreground, 0.04)
-          border.color: root.activeTab === "todo" ? Color.blue : Style.tint(root.foreground, 0.15)
+          color: root.activeTab === "todo" ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)
+          border.color: root.activeTab === "todo" ? root.foreground : Style.tint(root.foreground, 0.15)
           border.width: root.activeTab === "todo" ? 1.5 : 1
 
           Text {
             anchors.centerIn: parent
             text: "to-do (" + (root.allTasks || []).filter(t => t.status === "todo").length + ")"
-            color: root.activeTab === "todo" ? Color.blue : Style.tint(root.foreground, 0.7)
+            color: root.activeTab === "todo" ? root.foreground : Style.tint(root.foreground, 0.7)
             font.family: root.fontFamily
             font.bold: root.activeTab === "todo"
             font.pixelSize: Style.font.small
@@ -482,7 +482,7 @@ Item {
           Layout.minimumWidth: 0
           height: Style.space(30)
           radius: Style.space(7)
-          color: root.activeTab === "in_progress" ? Style.tint(Color.yellow, 0.18) : Style.tint(root.foreground, 0.04)
+          color: root.activeTab === "in_progress" ? Style.tint(Color.yellow, 0.18) : Style.tint(root.foreground, 0.03)
           border.color: root.activeTab === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15)
           border.width: root.activeTab === "in_progress" ? 1.5 : 1
 
@@ -508,7 +508,7 @@ Item {
           Layout.minimumWidth: 0
           height: Style.space(30)
           radius: Style.space(7)
-          color: root.activeTab === "done" ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.04)
+          color: root.activeTab === "done" ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.03)
           border.color: root.activeTab === "done" ? Color.green : Style.tint(root.foreground, 0.15)
           border.width: root.activeTab === "done" ? 1.5 : 1
 
@@ -539,7 +539,7 @@ Item {
           height: Style.space(34)
           radius: Style.space(7)
           color: Style.tint(root.foreground, 0.03)
-          border.color: itemInput.activeFocus ? (root.activeTab === "todo" ? Color.blue : (root.activeTab === "in_progress" ? Color.yellow : (root.activeTab === "done" ? Color.green : Color.blue))) : Style.tint(root.foreground, 0.15)
+          border.color: itemInput.activeFocus ? root.foreground : Style.tint(root.foreground, 0.15)
           border.width: 1
 
           RowLayout {
@@ -586,8 +586,8 @@ Item {
         Rectangle {
           height: Style.space(34)
           radius: Style.space(7)
-          color: root.activeTab === "notes" ? Style.tint(Color.blue, 0.18) : Style.tint(root.foreground, 0.04)
-          border.color: root.activeTab === "notes" ? Color.blue : Style.tint(root.foreground, 0.15)
+          color: root.activeTab === "notes" ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)
+          border.color: root.activeTab === "notes" ? root.foreground : Style.tint(root.foreground, 0.15)
           border.width: root.activeTab === "notes" ? 1.5 : 1
           Layout.preferredWidth: headerNoteLabel.implicitWidth + Style.space(20)
 
@@ -595,7 +595,7 @@ Item {
             id: headerNoteLabel
             anchors.centerIn: parent
             text: "Note (" + (root.allNotes || []).length + ")"
-            color: root.activeTab === "notes" ? Color.blue : Style.tint(root.foreground, 0.8)
+            color: root.activeTab === "notes" ? root.foreground : Style.tint(root.foreground, 0.8)
             font.family: root.fontFamily
             font.pixelSize: Style.font.body
             font.bold: root.activeTab === "notes"
@@ -665,10 +665,10 @@ Item {
               Layout.alignment: Qt.AlignVCenter
               color: isNoteItem
                 ? (isNoteDone ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.06))
-                : (itemObj.status === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06)))
+                : (itemObj.status === "done" ? Style.tint(root.foreground, 0.08) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06)))
               border.color: isNoteItem
                 ? (isNoteDone ? Color.green : Style.tint(root.foreground, 0.2))
-                : (itemObj.status === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2)))
+                : (itemObj.status === "done" ? root.foreground : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2)))
               border.width: 1
 
               Text {
@@ -678,7 +678,7 @@ Item {
                   : (itemObj.status === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶"))
                 color: isNoteItem
                   ? (isNoteDone ? Color.green : root.foreground)
-                  : (itemObj.status === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground))
+                  : (itemObj.status === "done" ? root.foreground : (isTaskRunning ? Color.green : root.foreground))
                 font.family: root.fontFamily
                 font.bold: true
                 font.pixelSize: Style.font.body
