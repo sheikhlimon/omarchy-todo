@@ -300,6 +300,37 @@ Item {
     return date.getDate() + " " + months[date.getMonth()]
   }
 
+  function formatDoneBadge(task, nowMs) {
+    if (!task) return "✓ Done"
+    var spent = root.formatSpentHuman(task.timeSpentSeconds)
+    var doneDateStr = task.completedAt || task.createdAt
+    if (!doneDateStr) return "✓ " + spent
+
+    var date = new Date(doneDateStr)
+    var now = new Date(nowMs || Date.now())
+
+    var isToday = date.getDate() === now.getDate() &&
+                  date.getMonth() === now.getMonth() &&
+                  date.getFullYear() === now.getFullYear()
+
+    if (isToday) {
+      return "✓ " + spent
+    }
+
+    var yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+    var isYesterday = date.getDate() === yesterday.getDate() &&
+                      date.getMonth() === yesterday.getMonth() &&
+                      date.getFullYear() === yesterday.getFullYear()
+
+    if (isYesterday) {
+      return "✓ " + spent + " · yesterday"
+    }
+
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return "✓ " + spent + " · " + date.getDate() + " " + months[date.getMonth()]
+  }
+
   function formatSeconds(totalSec) {
     var sec = Math.max(0, Math.floor(totalSec))
     var hrs = Math.floor(sec / 3600)
@@ -737,8 +768,9 @@ Item {
               }
             }
 
-            // Right: Time Badge (Tasks only: Smart Relative Date on To-Do, Stopwatch on Progress, Total Duration on Done)
+            // Right: Time Badge (Tasks only)
             Rectangle {
+              visible: !isNoteItem
               height: Style.space(20)
               radius: Style.space(4)
               color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemObj.status === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
@@ -753,7 +785,7 @@ Item {
                 text: itemObj.status === "in_progress"
                   ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
                   : (itemObj.status === "done"
-                    ? "✓ " + root.formatSpentHuman(itemObj.timeSpentSeconds)
+                    ? root.formatDoneBadge(itemObj, root.now)
                     : root.formatCreationTime(itemObj.createdAt, root.now))
                 color: isTaskRunning ? Color.green : (itemObj.status === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
                 font.family: root.fontFamily
