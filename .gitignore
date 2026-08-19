@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+bun.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build & Temporary Files
+dist/
+build/
+*.log
+scratch/
+
+# Quickshell / Qt
+*.qslog
+.qmlcache/
+*.qmlc
+*.jsc
+
+# OS & Editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+.directory

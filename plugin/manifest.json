@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "limon.todo",
+  "name": "Tasks",
+  "version": "1.0.0",
+  "author": "limon",
+  "description": "3-column task tracker with live timer and persistence",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Tasks",
+    "description": "Shows task status and live stopwatch timer",
+    "category": "Tools",
+    "allowMultiple": false
+  }
+}
