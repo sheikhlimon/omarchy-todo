@@ -743,27 +743,31 @@ Item {
               }
             }
 
-            // Copy Button (Hover-only on Note cards, visible on hover or when copied)
+            // Copy Icon Button (Hover-only on Note cards, shows clipboard glyph / checkmark feedback)
             Rectangle {
+              width: Style.space(22)
               height: Style.space(22)
-              radius: Style.space(4)
-              color: Style.tint(root.foreground, 0.08)
+              radius: Style.space(5)
+              color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
+              border.color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.18)
+              border.width: 1
               visible: isNoteItem && (isHovered || isItemFeedback)
-              Layout.preferredWidth: copyLabel.implicitWidth + Style.space(12)
               Layout.alignment: Qt.AlignVCenter
 
               Text {
                 id: copyLabel
                 anchors.centerIn: parent
-                text: isItemFeedback ? "✓ Copied" : "Copy"
+                text: isItemFeedback ? "✓" : "\uf0c5"
                 color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.micro
-                font.bold: true
+                font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
+                font.bold: isItemFeedback
               }
 
               MouseArea {
+                id: copyMouse
                 anchors.fill: parent
+                hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: root.copyToClipboard(itemObj.text, itemObj.id)
               }
