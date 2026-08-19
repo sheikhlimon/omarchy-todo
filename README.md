@@ -2,14 +2,14 @@
 
 A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task management, live stopwatch time tracking, and Markdown notes.
 
----
+![Omarchy Tasks](omarchy-todo.png)
 
 ## ✨ Features
 
 - **3-Stage Task Flow**:
-  - **`to-do`**: Shows task creation timestamp (`20 Aug · 5m ago`). Click `▶` to start and move to progress.
+  - **`to-do`**: Shows task creation timestamp (`just now`, `5m ago`, `yesterday`, `15 Aug`). Click `▶` to start and move to progress.
   - **`progress`**: Live ticking stopwatch (`⏱ 00:54`) with 1-click pause (`⏸`) and instant completion (`✓`).
-  - **`done`**: Displays total elapsed time spent on each task (e.g. `✓ 30m`, `✓ 1h 15m`). Click `↺` to reset back to To-Do.
+  - **`done`**: Displays total elapsed time spent on each task (`✓ 30m`, `✓ 1h 15m`). Click `↺` to reset back to To-Do.
 - **📝 Markdown Notes & Checklists**:
   - Full Markdown formatting support.
   - Interactive checkboxes `[ ]` / `[✓]` with strikeout formatting.
@@ -21,8 +21,6 @@ A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task man
 - **Persistent Storage**:
   - Tasks & notes: `~/.local/share/to-do/tasks.json`
   - Auto-generated Markdown log: `~/.local/share/to-do/tasks.md`
-
----
 
 ## 🚀 Installation
 
@@ -50,8 +48,6 @@ A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task man
    omarchy restart shell
    ```
 
----
-
 ## 📂 Project Structure
 
 ```
@@ -59,6 +55,7 @@ omarchy-todo/
 ├── manifest.json   # Omarchy plugin registration manifest
 ├── BarWidget.qml   # Native top bar icon & tooltip handler
 ├── Panel.qml       # Popup layer-shell panel (Tasks, Timer, Notes)
+├── omarchy-todo.png# Screenshot preview
 ├── LICENSE         # MIT License
 ├── README.md       # Documentation & setup guide
 └── .gitignore
