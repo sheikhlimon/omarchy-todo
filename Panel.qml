@@ -257,7 +257,7 @@ Item {
     var s = Math.max(0, Math.floor(sec || 0))
     if (s <= 0) return "0s"
     var hrs = Math.floor(s / 3600)
-    var mins = Math.floor((sec % 3600) / 60)
+    var mins = Math.floor((s % 3600) / 60)
     var remS = s % 60
 
     if (hrs > 0) {
@@ -658,28 +658,54 @@ Item {
             anchors.rightMargin: Style.space(8)
             spacing: Style.space(8)
 
-            // Left Action Box: Play/Pause/Restart for tasks; Toggle Checkbox for notes
+            // Left Action Box: Smart Hover (Play/Pause on Tasks, Checkbox on Notes, Restart on Done)
             Rectangle {
               width: Style.space(26)
               height: Style.space(26)
               radius: isNoteItem ? Style.space(5) : Style.space(6)
               Layout.alignment: Qt.AlignVCenter
               color: isNoteItem
-                ? (isNoteDone ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.06))
-                : (itemObj.status === "done" ? Style.tint(root.foreground, 0.08) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06)))
+                ? (isNoteDone ? Style.tint(Color.green, 0.18) : (isHovered ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)))
+                : (itemObj.status === "done"
+                  ? (isHovered ? Style.tint(Color.yellow, 0.15) : Style.tint(Color.green, 0.12))
+                  : (isTaskRunning
+                    ? Style.tint(Color.green, 0.2)
+                    : (isHovered ? Style.tint(root.foreground, 0.1) : Style.tint(root.foreground, 0.03))))
+
               border.color: isNoteItem
-                ? (isNoteDone ? Color.green : Style.tint(root.foreground, 0.2))
-                : (itemObj.status === "done" ? root.foreground : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2)))
+                ? (isNoteDone ? Color.green : (isHovered ? Style.tint(root.foreground, 0.35) : Style.tint(root.foreground, 0.2)))
+                : (itemObj.status === "done"
+                  ? (isHovered ? Color.yellow : Color.green)
+                  : (isTaskRunning ? Color.green : (isHovered ? Style.tint(root.foreground, 0.35) : Style.tint(root.foreground, 0.2))))
               border.width: 1
 
               Text {
                 anchors.centerIn: parent
-                text: isNoteItem
-                  ? (isNoteDone ? "✓" : "")
-                  : (itemObj.status === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶"))
-                color: isNoteItem
-                  ? (isNoteDone ? Color.green : root.foreground)
-                  : (itemObj.status === "done" ? root.foreground : (isTaskRunning ? Color.green : root.foreground))
+                text: {
+                  if (isNoteItem) {
+                    return isNoteDone ? "✓" : (isHovered ? "✓" : "")
+                  }
+                  if (itemObj.status === "done") {
+                    return isHovered ? "↺" : "✓"
+                  }
+                  if (itemObj.status === "in_progress") {
+                    return isTaskRunning ? "⏸" : "▶"
+                  }
+                  // To-Do
+                  return isHovered ? "▶" : ""
+                }
+                color: {
+                  if (isNoteItem) {
+                    return isNoteDone ? Color.green : Style.tint(root.foreground, 0.4)
+                  }
+                  if (itemObj.status === "done") {
+                    return isHovered ? Color.yellow : Color.green
+                  }
+                  if (isTaskRunning) {
+                    return Color.green
+                  }
+                  return root.foreground
+                }
                 font.family: root.fontFamily
                 font.bold: true
                 font.pixelSize: Style.font.body
@@ -716,7 +742,7 @@ Item {
               font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
             }
 
-            // In-Progress Quick Checkmark to complete task (Tasks only)
+            // In-Progress Quick Checkmark to complete task (Hover-only!)
             Rectangle {
               width: Style.space(22)
               height: Style.space(22)
@@ -724,7 +750,7 @@ Item {
               color: Style.tint(Color.green, 0.15)
               border.color: Color.green
               border.width: 1
-              visible: !isNoteItem && itemObj.status === "in_progress"
+              visible: !isNoteItem && itemObj.status === "in_progress" && isHovered
               Layout.alignment: Qt.AlignVCenter
 
               Text {
@@ -743,7 +769,7 @@ Item {
               }
             }
 
-            // Copy Icon Button (Hover-only on Note cards, shows clipboard glyph / checkmark feedback)
+            // Copy Icon Button (Hover-only on Note cards)
             Rectangle {
               width: Style.space(22)
               height: Style.space(22)
