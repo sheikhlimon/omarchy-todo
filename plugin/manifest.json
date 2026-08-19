@@ -1,10 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "limon.todo",
-  "name": "Tasks",
+  "name": "Tasks & Time Tracker",
   "version": "1.0.0",
-  "author": "limon",
-  "description": "3-column task tracker with live timer and persistence",
+  "author": "Sheikh Limon",
+  "license": "MIT",
+  "description": "Native task tracker, live stopwatch timer, and Markdown notes widget for the Omarchy bar",
   "kinds": [
     "bar-widget"
   ],
@@ -12,9 +13,10 @@
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "Tasks",
-    "description": "Shows task status and live stopwatch timer",
-    "category": "Tools",
-    "allowMultiple": false
+    "displayName": "Tasks & Time Tracker",
+    "description": "Shows task status, live stopwatch timer, and Markdown notes",
+    "category": "Utilities",
+    "allowMultiple": false,
+    "defaultSection": "right"
   }
 }
