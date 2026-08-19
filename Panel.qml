@@ -147,9 +147,9 @@ Item {
     var newTask = {
       id: id,
       title: title.trim(),
-      status: root.activeTab === "notes" ? "todo" : root.activeTab,
+      status: "todo",
       createdAt: new Date().toISOString(),
-      completedAt: root.activeTab === "done" ? new Date().toISOString() : null,
+      completedAt: null,
       timeSpentSeconds: 0,
       timer: {
         isRunning: false,
@@ -159,6 +159,7 @@ Item {
     var list = JSON.parse(JSON.stringify(root.allTasks))
     list.unshift(newTask)
     root.allTasks = list
+    root.activeTab = "todo"
     saveTasks()
   }
 
@@ -256,7 +257,7 @@ Item {
     var s = Math.max(0, Math.floor(sec || 0))
     if (s <= 0) return "0s"
     var hrs = Math.floor(s / 3600)
-    var mins = Math.floor((s % 3600) / 60)
+    var mins = Math.floor((sec % 3600) / 60)
     var remS = s % 60
 
     if (hrs > 0) {
@@ -449,7 +450,7 @@ Item {
         Layout.fillWidth: true
         spacing: Style.space(6)
 
-        // To-Do Tab (Neutral Charcoal styling)
+        // To-Do Tab
         Rectangle {
           Layout.fillWidth: true
           Layout.preferredWidth: 0
@@ -742,12 +743,12 @@ Item {
               }
             }
 
-            // Copy Button (ONLY on Note cards!)
+            // Copy Button (Hover-only on Note cards, visible on hover or when copied)
             Rectangle {
               height: Style.space(22)
               radius: Style.space(4)
               color: Style.tint(root.foreground, 0.08)
-              visible: isNoteItem
+              visible: isNoteItem && (isHovered || isItemFeedback)
               Layout.preferredWidth: copyLabel.implicitWidth + Style.space(12)
               Layout.alignment: Qt.AlignVCenter
 
@@ -794,13 +795,13 @@ Item {
               }
             }
 
-            // Delete Button ✕
+            // Delete Button ✕ (Hover-only)
             Rectangle {
               width: Style.space(18)
               height: Style.space(18)
               radius: Style.space(4)
               color: "transparent"
-              visible: isNoteItem || isHovered
+              visible: isHovered
               Layout.alignment: Qt.AlignVCenter
 
               Text {
