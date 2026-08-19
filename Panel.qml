@@ -655,55 +655,29 @@ Item {
             anchors.rightMargin: Style.space(8)
             spacing: Style.space(8)
 
-            // Left Action Box (Always visible)
+            // Left Action Box: Play/Pause/Restart for tasks; Toggle Checkbox for notes
             Rectangle {
               width: Style.space(26)
               height: Style.space(26)
               radius: isNoteItem ? Style.space(5) : Style.space(6)
               Layout.alignment: Qt.AlignVCenter
-
+              visible: !isNoteItem || isNoteDone || isHovered
               color: isNoteItem
-                ? (isNoteDone ? Style.tint(Color.green, 0.18) : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)))
-                : (itemObj.status === "done"
-                  ? (leftBtnMouse.containsMouse ? Style.tint(Color.yellow, 0.18) : Style.tint(Color.yellow, 0.10))
-                  : (isTaskRunning
-                    ? Style.tint(Color.green, 0.2)
-                    : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.1) : Style.tint(root.foreground, 0.05))))
-
+                ? (isNoteDone ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.06))
+                : (itemObj.status === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06)))
               border.color: isNoteItem
-                ? (isNoteDone ? Color.green : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.4) : Style.tint(root.foreground, 0.2)))
-                : (itemObj.status === "done"
-                  ? (leftBtnMouse.containsMouse ? Color.yellow : Style.tint(Color.yellow, 0.5))
-                  : (isTaskRunning ? Color.green : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.4) : Style.tint(root.foreground, 0.2))))
+                ? (isNoteDone ? Color.green : Style.tint(root.foreground, 0.2))
+                : (itemObj.status === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2)))
               border.width: 1
 
               Text {
                 anchors.centerIn: parent
-                text: {
-                  if (isNoteItem) {
-                    return isNoteDone ? "✓" : ""
-                  }
-                  if (itemObj.status === "done") {
-                    return "↺"
-                  }
-                  if (itemObj.status === "in_progress") {
-                    return isTaskRunning ? "⏸" : "▶"
-                  }
-                  // To-Do
-                  return "▶"
-                }
-                color: {
-                  if (isNoteItem) {
-                    return Color.green
-                  }
-                  if (itemObj.status === "done") {
-                    return Color.yellow
-                  }
-                  if (isTaskRunning) {
-                    return Color.green
-                  }
-                  return root.foreground
-                }
+                text: isNoteItem
+                  ? (isNoteDone ? "✓" : "")
+                  : (itemObj.status === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶"))
+                color: isNoteItem
+                  ? (isNoteDone ? Color.green : root.foreground)
+                  : (itemObj.status === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground))
                 font.family: root.fontFamily
                 font.bold: true
                 font.pixelSize: Style.font.body
@@ -712,7 +686,6 @@ Item {
               MouseArea {
                 id: leftBtnMouse
                 anchors.fill: parent
-                hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   if (isNoteItem) {
@@ -776,15 +749,11 @@ Item {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isNoteItem
-              opacity: (isHovered || isItemFeedback) ? 1.0 : 0.0
-              enabled: opacity > 0
+              visible: isNoteItem && (isHovered || isItemFeedback)
               color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
               border.color: isItemFeedback ? Color.green : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15))
               border.width: 1
               Layout.alignment: Qt.AlignVCenter
-
-              Behavior on opacity { NumberAnimation { duration: 100 } }
 
               Text {
                 id: copyLabel
@@ -837,11 +806,8 @@ Item {
               height: Style.space(20)
               radius: Style.space(4)
               color: deleteMouse.containsMouse ? Style.tint(Color.red, 0.15) : "transparent"
-              opacity: isHovered ? 1.0 : 0.0
-              enabled: opacity > 0
+              visible: isHovered
               Layout.alignment: Qt.AlignVCenter
-
-              Behavior on opacity { NumberAnimation { duration: 100 } }
 
               Text {
                 anchors.centerIn: parent
