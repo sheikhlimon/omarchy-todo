@@ -15,7 +15,7 @@ A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task man
   - Interactive checkboxes `[ ]` / `[✓]` with strikeout formatting.
   - 1-click **`Copy`** button (copies directly to Wayland clipboard with `wl-copy`).
 - **Seamless Omarchy Integration**:
-  - Matches the **Flexoki** palette and theme typography.
+  - **Theme Adaptive**: Automatically adapts to any active Omarchy theme (Catppuccin, Gruvbox, Nord, Tokyo Night, Flexoki, etc.) using dynamic theme tokens.
   - Native layer-shell popup panel attached to the top bar icon (`\uf0ae`).
   - 100% in-memory reactivity with **0% idle CPU** and zero background polling subprocesses.
 - **Persistent Storage**:
