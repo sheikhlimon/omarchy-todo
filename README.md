@@ -17,16 +17,21 @@ A native [Omarchy](https://omarchy.org/) bar plugin for task management, live st
 
 ## Install
 
-1. Copy the plugin into your Omarchy plugins directory:
-   ```bash
-   mkdir -p ~/.config/omarchy/plugins/limon.todo
-   cp -r ./*.qml ./manifest.json ~/.config/omarchy/plugins/limon.todo/
-   ```
+The recommended way to install and enable the plugin:
+```bash
+omarchy plugin add https://github.com/sheikhlimon/omarchy-todo.git --enable
+```
 
-2. Add `"limon.todo"` to `~/.config/omarchy/shell.json` and reload:
-   ```bash
-   omarchy restart shell
-   ```
+*(For manual installation: clone this repository to `~/.config/omarchy/plugins/limon.todo` and add `"limon.todo"` to `~/.config/omarchy/shell.json`).*
+
+## Uninstall
+
+To cleanly remove the plugin and disable it from your shell:
+```bash
+omarchy plugin remove limon.todo
+```
+
+*(For manual uninstallation: remove `"limon.todo"` from your `~/.config/omarchy/shell.json` and delete the `~/.config/omarchy/plugins/limon.todo` directory).*
 
 ## License
 
