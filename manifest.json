@@ -15,7 +15,7 @@
   "barWidget": {
     "displayName": "Tasks & Time Tracker",
     "description": "Shows task status, live stopwatch timer, and Markdown notes",
-    "category": "Utilities",
+    "category": "Productivity",
     "allowMultiple": false,
     "defaultSection": "right"
   }
