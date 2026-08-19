@@ -2,7 +2,7 @@
 
 A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task management, live stopwatch time tracking, and Markdown notes.
 
-![Omarchy Tasks](omarchy-todo.png)
+<img src="omarchy-todo.png" alt="Omarchy Tasks Preview" width="400">
 
 ## ✨ Features
 
