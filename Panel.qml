@@ -616,7 +616,7 @@ Item {
         }
       }
 
-      // Card List View (Clean, robust layout with no jitter)
+      // Card List View
       ListView {
         id: itemsListView
         Layout.fillWidth: true
@@ -636,7 +636,7 @@ Item {
           property bool isNoteItem: root.activeTab === "notes"
           property bool isTaskRunning: !isNoteItem && itemObj && itemObj.timer && itemObj.timer.isRunning === true
           property int liveDuration: isNoteItem ? 0 : root.getLiveTime(itemObj, root.now)
-          property bool isHovered: cardMouse.containsMouse
+          property bool isHovered: cardHover.hovered
           property bool isItemFeedback: root.feedbackTaskId === (itemObj ? itemObj.id : "")
           property bool isNoteDone: isNoteItem && itemObj && itemObj.done === true
 
@@ -644,11 +644,8 @@ Item {
           border.color: isTaskRunning ? Color.green : (isHovered ? Style.tint(root.foreground, 0.25) : Style.tint(root.foreground, 0.12))
           border.width: isTaskRunning ? 1.5 : 1
 
-          MouseArea {
-            id: cardMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
+          HoverHandler {
+            id: cardHover
           }
 
           RowLayout {
@@ -658,7 +655,7 @@ Item {
             anchors.rightMargin: Style.space(8)
             spacing: Style.space(8)
 
-            // Left Action Box (Always visible action / checkbox)
+            // Left Action Box (Always visible)
             Rectangle {
               width: Style.space(26)
               height: Style.space(26)
@@ -834,7 +831,7 @@ Item {
               }
             }
 
-            // Delete Button ✕ (Hover-only)
+            // Delete Button ✕ (Hover-reveal on ALL cards - Tasks & Notes)
             Rectangle {
               width: Style.space(20)
               height: Style.space(20)
