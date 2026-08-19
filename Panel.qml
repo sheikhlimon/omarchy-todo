@@ -271,21 +271,33 @@ Item {
   function formatCreationTime(isoStr, nowMs) {
     if (!isoStr) return ""
     var date = new Date(isoStr)
-    var diffSec = Math.floor(((nowMs || Date.now()) - date.getTime()) / 1000)
+    var now = new Date(nowMs || Date.now())
+    var diffSec = Math.floor((now.getTime() - date.getTime()) / 1000)
     var diffMin = Math.floor(diffSec / 60)
     var diffHours = Math.floor(diffMin / 60)
-    var diffDays = Math.floor(diffHours / 24)
+
+    var isToday = date.getDate() === now.getDate() &&
+                  date.getMonth() === now.getMonth() &&
+                  date.getFullYear() === now.getFullYear()
+
+    var yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+    var isYesterday = date.getDate() === yesterday.getDate() &&
+                      date.getMonth() === yesterday.getMonth() &&
+                      date.getFullYear() === yesterday.getFullYear()
+
+    if (isToday) {
+      if (diffSec < 45) return "just now"
+      if (diffMin < 60) return diffMin + "m ago"
+      return diffHours + "h ago"
+    }
+
+    if (isYesterday) {
+      return "yesterday"
+    }
 
     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    var dStr = date.getDate() + " " + months[date.getMonth()]
-
-    var rel = "just now"
-    if (diffSec >= 45 && diffMin < 60) rel = diffMin + "m ago"
-    else if (diffHours < 24 && diffMin >= 60) rel = diffHours + "h ago"
-    else if (diffDays === 1) rel = "1d ago"
-    else if (diffDays > 1) rel = diffDays + "d ago"
-
-    return dStr + " (" + rel + ")"
+    return date.getDate() + " " + months[date.getMonth()]
   }
 
   function formatSeconds(totalSec) {
@@ -725,9 +737,8 @@ Item {
               }
             }
 
-            // Right: Time Badge (Tasks only)
+            // Right: Time Badge (Tasks only: Smart Relative Date on To-Do, Stopwatch on Progress, Total Duration on Done)
             Rectangle {
-              visible: !isNoteItem
               height: Style.space(20)
               radius: Style.space(4)
               color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemObj.status === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
