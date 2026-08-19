@@ -2,7 +2,10 @@
 
 A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task management, live stopwatch time tracking, and Markdown notes.
 
-<img src="assets/omarchy-todo.png" alt="Omarchy Tasks Preview" width="400">
+<p align="center">
+  <img src="assets/omarchy-todo.png" alt="Tasks & Time Tracker" width="380">
+  <img src="assets/omarchy-notes.png" alt="Markdown Notes & Checklists" width="380">
+</p>
 
 ## ✨ Features
 
@@ -52,11 +55,13 @@ A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task man
 
 ```
 omarchy-todo/
-├── manifest.json   # Omarchy plugin registration manifest
-├── BarWidget.qml   # Native top bar icon & tooltip handler
-├── Panel.qml       # Popup layer-shell panel (Tasks, Timer, Notes)
-├── assets/omarchy-todo.png# Screenshot preview
-├── LICENSE         # MIT License
-├── README.md       # Documentation & setup guide
+├── assets/
+│   ├── omarchy-todo.png   # Task view preview
+│   └── omarchy-notes.png  # Notes & checklists preview
+├── manifest.json          # Omarchy plugin registration manifest
+├── BarWidget.qml          # Native top bar icon & tooltip handler
+├── Panel.qml              # Popup layer-shell panel (Tasks, Timer, Notes)
+├── LICENSE                # MIT License
+├── README.md              # Documentation & setup guide
 └── .gitignore
 ```
