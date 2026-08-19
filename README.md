@@ -2,8 +2,6 @@
 
 A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task management, live stopwatch time tracking, and Markdown notes.
 
-![Task Tracker](https://raw.githubusercontent.com/omarchy/omarchy/main/assets/preview.png)
-
 ---
 
 ## ✨ Features
@@ -31,7 +29,7 @@ A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task man
 1. Copy the plugin files to your Omarchy user plugins directory:
    ```bash
    mkdir -p ~/.config/omarchy/plugins/limon.todo
-   cp -r plugin/* ~/.config/omarchy/plugins/limon.todo/
+   cp -r ./*.qml ./manifest.json ~/.config/omarchy/plugins/limon.todo/
    ```
 
 2. Add `"limon.todo"` to your bar layout in `~/.config/omarchy/shell.json`:
@@ -57,11 +55,11 @@ A native [Omarchy](https://omarchy.org/) Quickshell bar widget for fast task man
 ## 📂 Project Structure
 
 ```
-.
-├── plugin/
-│   ├── manifest.json   # Omarchy plugin registration manifest
-│   ├── BarWidget.qml   # Native top bar icon & tooltip handler
-│   └── Panel.qml       # Popup layer-shell panel (Tasks, Timer, Notes)
-├── package.json
-└── README.md
+omarchy-todo/
+├── manifest.json   # Omarchy plugin registration manifest
+├── BarWidget.qml   # Native top bar icon & tooltip handler
+├── Panel.qml       # Popup layer-shell panel (Tasks, Timer, Notes)
+├── LICENSE         # MIT License
+├── README.md       # Documentation & setup guide
+└── .gitignore
 ```

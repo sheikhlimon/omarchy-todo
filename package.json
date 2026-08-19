@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Tasks & Time Tracker native bar plugin for Omarchy / Quickshell",
   "scripts": {
-    "install-plugin": "mkdir -p ~/.config/omarchy/plugins/limon.todo && cp -r plugin/* ~/.config/omarchy/plugins/limon.todo/ && omarchy restart shell",
+    "install-plugin": "mkdir -p ~/.config/omarchy/plugins/limon.todo && cp -r ./*.qml ./manifest.json ~/.config/omarchy/plugins/limon.todo/ && omarchy restart shell",
     "restart": "omarchy restart shell"
   }
 }
