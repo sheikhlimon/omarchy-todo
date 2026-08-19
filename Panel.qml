@@ -257,7 +257,7 @@ Item {
     var s = Math.max(0, Math.floor(sec || 0))
     if (s <= 0) return "0s"
     var hrs = Math.floor(s / 3600)
-    var mins = Math.floor((s % 3600) / 60)
+    var mins = Math.floor((sec % 3600) / 60)
     var remS = s % 60
 
     if (hrs > 0) {
@@ -616,7 +616,7 @@ Item {
         }
       }
 
-      // Card List View (Unified exact style for both Tasks and Notes)
+      // Card List View (Rock-solid layout with stable geometry and smooth hover transitions)
       ListView {
         id: itemsListView
         Layout.fillWidth: true
@@ -658,53 +658,54 @@ Item {
             anchors.rightMargin: Style.space(8)
             spacing: Style.space(8)
 
-            // Left Action Box: Smart Hover (Play/Pause on Tasks, Checkbox on Notes, Restart on Done)
+            // Left Action Box: Checkbox for Notes, Play/Pause for Tasks, Restart for Done
             Rectangle {
               width: Style.space(26)
               height: Style.space(26)
               radius: isNoteItem ? Style.space(5) : Style.space(6)
               Layout.alignment: Qt.AlignVCenter
+
               color: isNoteItem
-                ? (isNoteDone ? Style.tint(Color.green, 0.18) : (isHovered ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)))
+                ? (isNoteDone ? Style.tint(Color.green, 0.18) : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)))
                 : (itemObj.status === "done"
-                  ? (isHovered ? Style.tint(Color.yellow, 0.15) : Style.tint(Color.green, 0.12))
+                  ? (leftBtnMouse.containsMouse ? Style.tint(Color.yellow, 0.18) : Style.tint(Color.green, 0.12))
                   : (isTaskRunning
                     ? Style.tint(Color.green, 0.2)
-                    : (isHovered ? Style.tint(root.foreground, 0.1) : Style.tint(root.foreground, 0.03))))
+                    : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.1) : Style.tint(root.foreground, 0.03))))
 
               border.color: isNoteItem
-                ? (isNoteDone ? Color.green : (isHovered ? Style.tint(root.foreground, 0.35) : Style.tint(root.foreground, 0.2)))
+                ? (isNoteDone ? Color.green : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.4) : Style.tint(root.foreground, 0.2)))
                 : (itemObj.status === "done"
-                  ? (isHovered ? Color.yellow : Color.green)
-                  : (isTaskRunning ? Color.green : (isHovered ? Style.tint(root.foreground, 0.35) : Style.tint(root.foreground, 0.2))))
+                  ? (leftBtnMouse.containsMouse ? Color.yellow : Color.green)
+                  : (isTaskRunning ? Color.green : (leftBtnMouse.containsMouse ? Style.tint(root.foreground, 0.4) : Style.tint(root.foreground, 0.2))))
               border.width: 1
 
               Text {
                 anchors.centerIn: parent
                 text: {
                   if (isNoteItem) {
-                    return isNoteDone ? "✓" : (isHovered ? "✓" : "")
+                    return isNoteDone ? "✓" : ""
                   }
                   if (itemObj.status === "done") {
-                    return isHovered ? "↺" : "✓"
+                    return leftBtnMouse.containsMouse ? "↺" : "✓"
                   }
                   if (itemObj.status === "in_progress") {
                     return isTaskRunning ? "⏸" : "▶"
                   }
                   // To-Do
-                  return isHovered ? "▶" : ""
+                  return "▶"
                 }
                 color: {
                   if (isNoteItem) {
-                    return isNoteDone ? Color.green : Style.tint(root.foreground, 0.4)
+                    return Color.green
                   }
                   if (itemObj.status === "done") {
-                    return isHovered ? Color.yellow : Color.green
+                    return leftBtnMouse.containsMouse ? Color.yellow : Color.green
                   }
                   if (isTaskRunning) {
                     return Color.green
                   }
-                  return root.foreground
+                  return leftBtnMouse.containsMouse ? root.foreground : Style.tint(root.foreground, 0.7)
                 }
                 font.family: root.fontFamily
                 font.bold: true
@@ -712,7 +713,9 @@ Item {
               }
 
               MouseArea {
+                id: leftBtnMouse
                 anchors.fill: parent
+                hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   if (isNoteItem) {
@@ -742,7 +745,7 @@ Item {
               font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
             }
 
-            // In-Progress Quick Checkmark to complete task (Hover-only!)
+            // In-Progress Quick Checkmark to complete task (Smooth Opacity)
             Rectangle {
               width: Style.space(22)
               height: Style.space(22)
@@ -750,8 +753,12 @@ Item {
               color: Style.tint(Color.green, 0.15)
               border.color: Color.green
               border.width: 1
-              visible: !isNoteItem && itemObj.status === "in_progress" && isHovered
+              visible: !isNoteItem && itemObj.status === "in_progress"
+              opacity: isHovered ? 1.0 : 0.0
+              enabled: opacity > 0
               Layout.alignment: Qt.AlignVCenter
+
+              Behavior on opacity { NumberAnimation { duration: 120 } }
 
               Text {
                 anchors.centerIn: parent
@@ -769,21 +776,25 @@ Item {
               }
             }
 
-            // Copy Icon Button (Hover-only on Note cards)
+            // Copy Icon Button (Fixed slot for Notes, Smooth Opacity on Hover)
             Rectangle {
-              width: Style.space(22)
-              height: Style.space(22)
+              width: Style.space(24)
+              height: Style.space(24)
               radius: Style.space(5)
+              visible: isNoteItem
+              opacity: (isHovered || isItemFeedback) ? 1.0 : 0.0
+              enabled: opacity > 0
               color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
-              border.color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.18)
+              border.color: isItemFeedback ? Color.green : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15))
               border.width: 1
-              visible: isNoteItem && (isHovered || isItemFeedback)
               Layout.alignment: Qt.AlignVCenter
+
+              Behavior on opacity { NumberAnimation { duration: 120 } }
 
               Text {
                 id: copyLabel
                 anchors.centerIn: parent
-                text: isItemFeedback ? "✓" : "\uf0c5"
+                text: isItemFeedback ? "✓" : "📋"
                 color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
                 font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
@@ -825,14 +836,17 @@ Item {
               }
             }
 
-            // Delete Button ✕ (Hover-only)
+            // Delete Button ✕ (Smooth Opacity on Hover)
             Rectangle {
-              width: Style.space(18)
-              height: Style.space(18)
+              width: Style.space(20)
+              height: Style.space(20)
               radius: Style.space(4)
-              color: "transparent"
-              visible: isHovered
+              color: deleteMouse.containsMouse ? Style.tint(Color.red, 0.15) : "transparent"
+              opacity: isHovered ? 1.0 : 0.0
+              enabled: opacity > 0
               Layout.alignment: Qt.AlignVCenter
+
+              Behavior on opacity { NumberAnimation { duration: 120 } }
 
               Text {
                 anchors.centerIn: parent
@@ -842,7 +856,9 @@ Item {
                 font.bold: true
               }
               MouseArea {
+                id: deleteMouse
                 anchors.fill: parent
+                hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   if (isNoteItem) {
