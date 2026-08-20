@@ -12,7 +12,6 @@ Item {
   property var anchorItem: null
   property var host: null
   property var bar: null
-  property var settings: null
   property bool opened: false
 
   property string activeTab: "todo" // "todo" | "in_progress" | "done" | "notes"
@@ -34,10 +33,6 @@ Item {
     return null
   }
   readonly property bool hasRunningTask: runningTask !== null
-  readonly property string activeTimerText: {
-    if (!runningTask) return ""
-    return formatSeconds(getLiveTime(runningTask, root.now))
-  }
 
   readonly property color foreground: Color.popups.text
   readonly property color bg: Color.popups.background
@@ -693,7 +688,7 @@ Item {
               Text {
                 id: copyLabel
                 anchors.centerIn: parent
-                text: isItemFeedback ? "✓" : "📋"
+                text: isItemFeedback ? "✓" : "󰆏"
                 color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
                 font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
@@ -735,7 +730,7 @@ Item {
               }
             }
 
-            // Delete Button ✕ (Hover-reveal on ALL cards - Tasks & Notes)
+            // Delete Button (Hover-reveal on ALL cards - Tasks & Notes)
             Rectangle {
               width: Style.space(20)
               height: Style.space(20)
