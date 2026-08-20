@@ -132,6 +132,19 @@ Item {
     saveTasks()
   }
 
+  function updateTask(id, title) {
+    if (!title || title.trim() === "") return
+    var list = JSON.parse(JSON.stringify(root.allTasks || []))
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        list[i].title = title.trim()
+        break
+      }
+    }
+    root.allTasks = list
+    saveTasks()
+  }
+
   function toggleNoteDone(id) {
     var list = JSON.parse(JSON.stringify(root.allNotes || []))
     var note = list.find(n => n.id === id)
@@ -650,7 +663,7 @@ Item {
             StackLayout {
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignVCenter
-              currentIndex: isNoteItem && root.editingId === itemObj.id ? 1 : 0
+              currentIndex: root.editingId === itemObj.id ? 1 : 0
 
               Text {
                 Layout.fillWidth: true
@@ -667,7 +680,7 @@ Item {
               QQC.TextField {
                 id: editField
                 Layout.fillWidth: true
-                text: isNoteItem ? (itemObj.text || "") : ""
+                text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
                 color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
@@ -677,7 +690,10 @@ Item {
                 topPadding: 0
                 bottomPadding: 0
                 onAccepted: {
-                  if (text.trim() !== "") root.updateNote(itemObj.id, text)
+                  if (text.trim() !== "") {
+                    if (isNoteItem) root.updateNote(itemObj.id, text)
+                    else root.updateTask(itemObj.id, text)
+                  }
                   root.editingId = ""
                 }
                 Keys.onEscapePressed: root.editingId = ""
@@ -713,12 +729,12 @@ Item {
                 onClicked: root.moveTask(itemObj.id, "done")
               }
             }
-            // Edit Icon Button (Hover-only on Notes cards)
+            // Edit Icon Button (Hover-only on ALL cards)
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isNoteItem && isHovered
+              visible: isHovered
               color: editMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06)
               border.color: editMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15)
               border.width: 1
