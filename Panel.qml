@@ -694,11 +694,16 @@ Item {
                   event.accepted = false
                 } else {
                   event.accepted = true
-                  if (text.trim() !== "") {
-                    if (isNoteItem) root.updateNote(itemObj.id, text)
-                    else root.updateTask(itemObj.id, text)
-                  }
+                  var newText = text
+                  var id = itemObj.id
+                  var isNote = isNoteItem
                   root.editingId = ""
+                  if (newText.trim() !== "") {
+                    Qt.callLater(function() {
+                      if (isNote) root.updateNote(id, newText)
+                      else root.updateTask(id, newText)
+                    })
+                  }
                 }
               }
               Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
@@ -761,11 +766,16 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   if (root.editingId === itemObj.id) {
-                    if (editField.text.trim() !== "") {
-                      if (isNoteItem) root.updateNote(itemObj.id, editField.text)
-                      else root.updateTask(itemObj.id, editField.text)
-                    }
+                    var newText = editField.text
+                    var id = itemObj.id
+                    var isNote = isNoteItem
                     root.editingId = ""
+                    if (newText.trim() !== "") {
+                      Qt.callLater(function() {
+                        if (isNote) root.updateNote(id, newText)
+                        else root.updateTask(id, newText)
+                      })
+                    }
                   } else {
                     root.editingId = itemObj.id
                   }
