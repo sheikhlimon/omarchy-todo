@@ -754,11 +754,11 @@ Item {
 
             // In-Progress Quick Checkmark to complete task (Always visible in progress tab)
             Rectangle {
-              width: Style.space(22)
-              height: Style.space(22)
+              width: Style.space(24)
+              height: Style.space(24)
               radius: Style.space(5)
-              color: completeMouse.containsMouse ? Style.tint(Color.green, 0.25) : Style.tint(Color.green, 0.15)
-              border.color: Color.green
+              color: completeMouse.containsMouse ? Style.tint(Color.green, 0.15) : Style.tint(root.foreground, 0.06)
+              border.color: completeMouse.containsMouse ? Color.green : Style.tint(root.foreground, 0.15)
               border.width: 1
               visible: !isNoteItem && itemStatus === "in_progress"
               Layout.alignment: Qt.AlignVCenter
@@ -766,7 +766,7 @@ Item {
               Text {
                 anchors.centerIn: parent
                 text: "✓"
-                color: Color.green
+                color: completeMouse.containsMouse ? Color.green : Style.tint(root.foreground, 0.8)
                 font.family: root.fontFamily
                 font.bold: true
                 font.pixelSize: Style.font.small
