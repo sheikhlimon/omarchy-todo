@@ -611,7 +611,7 @@ Item {
         Layout.fillHeight: true
         clip: true
         spacing: Style.space(6)
-        cacheBuffer: 3000
+        cacheBuffer: 1000
         model: root.currentItemsList
         QQC.ScrollBar.vertical: QQC.ScrollBar {
           active: true
