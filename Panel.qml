@@ -663,59 +663,89 @@ Item {
               }
             }
 
-            // Center Content (Title for tasks / Markdown text for notes)
-            Text {
-              visible: root.editingId !== itemObj.id
+            // Center Content (Column: Text + Time Badge below)
+            ColumnLayout {
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignVCenter
-              wrapMode: Text.Wrap
-              text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
-              textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
-              color: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
-              font.family: root.fontFamily
-              font.weight: (!isNoteItem && itemStatus !== "done") || (isNoteItem && !isNoteDone) ? 550 : 400
-              font.pixelSize: Style.font.body
-              font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done")
-            }
+              spacing: Style.space(4)
 
-            QQC.TextArea {
-              id: editField
-              visible: root.editingId === itemObj.id
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
-              wrapMode: Text.Wrap
-              text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
-              color: root.foreground
-              font.family: root.fontFamily
-              font.pixelSize: Style.font.body
-              background: null
-              leftPadding: 0
-              rightPadding: 0
-              topPadding: 0
-              bottomPadding: 0
-              Keys.onReturnPressed: (event) => {
-                if (event.modifiers & Qt.ShiftModifier) {
-                  event.accepted = false
-                } else {
-                  event.accepted = true
-                  var newText = text
-                  var id = itemObj.id
-                  var isNote = isNoteItem
-                  root.editingId = ""
-                  if (newText.trim() !== "") {
-                    Qt.callLater(function() {
-                      if (isNote) root.updateNote(id, newText)
-                      else root.updateTask(id, newText)
-                    })
+              Text {
+                visible: root.editingId !== itemObj.id
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
+                textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
+                color: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
+                font.family: root.fontFamily
+                font.weight: (!isNoteItem && itemStatus !== "done") || (isNoteItem && !isNoteDone) ? 550 : 400
+                font.pixelSize: Style.font.body
+                font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done")
+              }
+
+              QQC.TextArea {
+                id: editField
+                visible: root.editingId === itemObj.id
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.body
+                background: null
+                leftPadding: 0
+                rightPadding: 0
+                topPadding: 0
+                bottomPadding: 0
+                Keys.onReturnPressed: (event) => {
+                  if (event.modifiers & Qt.ShiftModifier) {
+                    event.accepted = false
+                  } else {
+                    event.accepted = true
+                    var newText = text
+                    var id = itemObj.id
+                    var isNote = isNoteItem
+                    root.editingId = ""
+                    if (newText.trim() !== "") {
+                      Qt.callLater(function() {
+                        if (isNote) root.updateNote(id, newText)
+                        else root.updateTask(id, newText)
+                      })
+                    }
+                  }
+                }
+                Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
+                Keys.onEscapePressed: root.editingId = ""
+                onVisibleChanged: {
+                  if (visible) {
+                    forceActiveFocus()
+                    cursorPosition = text.length
                   }
                 }
               }
-              Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
-              Keys.onEscapePressed: root.editingId = ""
-              onVisibleChanged: {
-                if (visible) {
-                  forceActiveFocus()
-                  cursorPosition = text.length
+
+              // Time Badge (Tasks only) - Vertical end
+              Rectangle {
+                visible: !isNoteItem
+                height: Style.space(20)
+                radius: Style.space(4)
+                color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemStatus === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
+                border.color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
+                border.width: 1
+                Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
+                Layout.alignment: Qt.AlignLeft
+
+                Text {
+                  id: timeText
+                  anchors.centerIn: parent
+                  text: itemStatus === "in_progress"
+                    ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
+                    : (itemStatus === "done"
+                      ? root.formatDoneBadge(itemObj, root.now)
+                      : root.formatCreationTime(itemObj.createdAt, root.now))
+                  color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.micro
+                  font.bold: isTaskRunning || itemStatus === "done"
                 }
               }
             }
@@ -854,31 +884,6 @@ Item {
               }
             }
 
-            // Right: Time Badge (Tasks only)
-            Rectangle {
-              visible: !isNoteItem
-              height: Style.space(20)
-              radius: Style.space(4)
-              color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemStatus === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
-              border.color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
-              border.width: 1
-              Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
-              Layout.alignment: Qt.AlignVCenter
-
-              Text {
-                id: timeText
-                anchors.centerIn: parent
-                text: itemStatus === "in_progress"
-                  ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
-                  : (itemStatus === "done"
-                    ? root.formatDoneBadge(itemObj, root.now)
-                    : root.formatCreationTime(itemObj.createdAt, root.now))
-                color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.micro
-                font.bold: isTaskRunning || itemStatus === "done"
-              }
-            }
           }
         }
 
