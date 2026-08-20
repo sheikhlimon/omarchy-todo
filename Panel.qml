@@ -668,7 +668,7 @@ Item {
               textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
               color: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
               font.family: root.fontFamily
-              font.bold: (!isNoteItem && itemObj.status !== "done") || (isNoteItem && !isNoteDone)
+              font.weight: (!isNoteItem && itemObj.status !== "done") || (isNoteItem && !isNoteDone) ? Font.Medium : Font.Normal
               font.pixelSize: Style.font.body
               font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
             }
