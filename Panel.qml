@@ -145,12 +145,14 @@ Item {
   }
 
   function toggleNoteDone(id) {
-    var note = root.allNotes.find(n => n.id === id)
-    if (note) {
-      note.done = !note.done
-      root.dataVersion++
-      saveTasks()
+    for (var i = 0; i < root.allNotes.length; i++) {
+      if (root.allNotes[i].id === id) {
+        root.allNotes[i].done = !root.allNotes[i].done
+        break
+      }
     }
+    root.dataVersion++
+    saveTasks()
   }
 
   function deleteNote(id) {
@@ -174,29 +176,35 @@ Item {
   }
 
   function toggleTimer(task) {
-    var t = root.allTasks.find(item => item.id === task.id)
-    if (!t) return
+    var idx = -1;
+    for (var i = 0; i < root.allTasks.length; i++) {
+      if (root.allTasks[i].id === task.id) {
+        idx = i;
+        break;
+      }
+    }
+    if (idx === -1) return
 
-    if (!t.timer) {
-      t.timer = { isRunning: false, lastStartedAt: null }
+    if (!root.allTasks[idx].timer) {
+      root.allTasks[idx].timer = { isRunning: false, lastStartedAt: null }
     }
 
     var listChanged = false;
-    if (t.status === "todo") {
-      t.status = "in_progress"
+    if (root.allTasks[idx].status === "todo") {
+      root.allTasks[idx].status = "in_progress"
       listChanged = true;
     }
 
-    if (t.timer.isRunning) {
-      stopTimerObj(t)
+    if (root.allTasks[idx].timer.isRunning) {
+      stopTimerObj(root.allTasks[idx])
     } else {
-      for (var i = 0; i < root.allTasks.length; i++) {
-        if (root.allTasks[i].timer && root.allTasks[i].timer.isRunning) {
-          stopTimerObj(root.allTasks[i])
+      for (var j = 0; j < root.allTasks.length; j++) {
+        if (root.allTasks[j].timer && root.allTasks[j].timer.isRunning) {
+          stopTimerObj(root.allTasks[j])
         }
       }
-      t.timer.isRunning = true
-      t.timer.lastStartedAt = new Date().toISOString()
+      root.allTasks[idx].timer.isRunning = true
+      root.allTasks[idx].timer.lastStartedAt = new Date().toISOString()
     }
 
     root.now = Date.now()
