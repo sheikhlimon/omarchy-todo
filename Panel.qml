@@ -73,6 +73,7 @@ Item {
   }
 
   function saveTasks() {
+    root.dataVersion++
     var data = {
       version: 1,
       notes: root.allNotes,
@@ -338,6 +339,7 @@ Item {
           const obj = JSON.parse(data);
           root.allTasks = obj.tasks || [];
           root.allNotes = obj.notes || [];
+          root.dataVersion++;
         } catch(e) {}
       }
     }
@@ -643,6 +645,7 @@ Item {
 
               Text {
                 anchors.centerIn: parent
+                anchors.horizontalCenterOffset: text === "▶" ? 1 : 0
                 text: itemStatus === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶")
                 color: itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground)
                 font.family: root.fontFamily
