@@ -102,6 +102,8 @@ Item {
     saveTasks()
   }
 
+  property string editingId: ""
+
   function addNote(text) {
     if (!text || text.trim() === "") return
     var id = Math.random().toString(36).substring(2, 9)
@@ -113,6 +115,19 @@ Item {
     }
     var list = JSON.parse(JSON.stringify(root.allNotes || []))
     list.unshift(newNote)
+    root.allNotes = list
+    saveTasks()
+  }
+
+  function updateNote(id, text) {
+    if (!text || text.trim() === "") return
+    var list = JSON.parse(JSON.stringify(root.allNotes || []))
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        list[i].text = text.trim()
+        break
+      }
+    }
     root.allNotes = list
     saveTasks()
   }
@@ -632,17 +647,42 @@ Item {
             }
 
             // Center Content (Title for tasks / Markdown text for notes)
-            Text {
+            StackLayout {
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignVCenter
-              wrapMode: Text.Wrap
-              text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
-              textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
-              color: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
-              font.family: root.fontFamily
-              font.bold: (!isNoteItem && itemObj.status !== "done") || (isNoteItem && !isNoteDone)
-              font.pixelSize: Style.font.body
-              font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
+              currentIndex: isNoteItem && root.editingId === itemObj.id ? 1 : 0
+
+              Text {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
+                textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
+                color: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
+                font.family: root.fontFamily
+                font.bold: (!isNoteItem && itemObj.status !== "done") || (isNoteItem && !isNoteDone)
+                font.pixelSize: Style.font.body
+                font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
+              }
+
+              QQC.TextField {
+                id: editField
+                Layout.fillWidth: true
+                text: isNoteItem ? (itemObj.text || "") : ""
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.body
+                background: null
+                leftPadding: 0
+                rightPadding: 0
+                topPadding: 0
+                bottomPadding: 0
+                onAccepted: {
+                  if (text.trim() !== "") root.updateNote(itemObj.id, text)
+                  root.editingId = ""
+                }
+                Keys.onEscapePressed: root.editingId = ""
+                onVisibleChanged: if (visible) forceActiveFocus()
+              }
             }
 
             // In-Progress Quick Checkmark to complete task (Always visible in progress tab)
@@ -673,6 +713,34 @@ Item {
                 onClicked: root.moveTask(itemObj.id, "done")
               }
             }
+            // Edit Icon Button (Hover-only on Notes cards)
+            Rectangle {
+              width: Style.space(24)
+              height: Style.space(24)
+              radius: Style.space(5)
+              visible: isNoteItem && isHovered
+              color: editMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06)
+              border.color: editMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15)
+              border.width: 1
+              Layout.alignment: Qt.AlignVCenter
+
+              Text {
+                anchors.centerIn: parent
+                text: "󰏫"
+                color: Style.tint(root.foreground, 0.85)
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.micro
+              }
+
+              MouseArea {
+                id: editMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.editingId = itemObj.id
+              }
+            }
+
 
             // Copy Icon Button (Hover-only on Notes cards)
             Rectangle {
