@@ -677,26 +677,32 @@ Item {
                 font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
               }
 
-              QQC.TextField {
+              QQC.TextArea {
                 id: editField
                 Layout.fillWidth: true
+                wrapMode: Text.Wrap
                 text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
                 color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
                 background: null
-                verticalAlignment: TextInput.AlignVCenter
                 leftPadding: 0
                 rightPadding: 0
                 topPadding: 0
                 bottomPadding: 0
-                onAccepted: {
-                  if (text.trim() !== "") {
-                    if (isNoteItem) root.updateNote(itemObj.id, text)
-                    else root.updateTask(itemObj.id, text)
+                Keys.onReturnPressed: (event) => {
+                  if (event.modifiers & Qt.ShiftModifier) {
+                    event.accepted = false
+                  } else {
+                    event.accepted = true
+                    if (text.trim() !== "") {
+                      if (isNoteItem) root.updateNote(itemObj.id, text)
+                      else root.updateTask(itemObj.id, text)
+                    }
+                    root.editingId = ""
                   }
-                  root.editingId = ""
                 }
+                Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
                 Keys.onEscapePressed: root.editingId = ""
                 onVisibleChanged: if (visible) forceActiveFocus()
               }
