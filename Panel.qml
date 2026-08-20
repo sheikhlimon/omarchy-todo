@@ -567,7 +567,7 @@ Item {
             id: headerNoteLabel
             anchors.centerIn: parent
             text: "notes (" + (root.allNotes || []).length + ")"
-            color: root.activeTab === "notes" ? root.foreground : Style.tint(root.foreground, 0.8)
+            color: root.activeTab === "notes" ? root.foreground : Style.tint(root.foreground, 0.85)
             font.family: root.fontFamily
             font.pixelSize: Style.font.body
             font.bold: root.activeTab === "notes"
@@ -766,7 +766,7 @@ Item {
               Text {
                 anchors.centerIn: parent
                 text: "✓"
-                color: completeMouse.containsMouse ? Color.green : Style.tint(root.foreground, 0.8)
+                color: completeMouse.containsMouse ? Color.green : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
                 font.bold: true
                 font.pixelSize: Style.font.small
@@ -872,7 +872,7 @@ Item {
               Text {
                 anchors.centerIn: parent
                 text: "✕"
-                color: deleteMouse.containsMouse ? Color.red : Style.tint(root.foreground, 0.8)
+                color: deleteMouse.containsMouse ? Color.red : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.small
                 font.bold: true
