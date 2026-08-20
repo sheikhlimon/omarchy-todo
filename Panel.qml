@@ -685,6 +685,7 @@ Item {
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
                 background: null
+                verticalAlignment: TextInput.AlignVCenter
                 leftPadding: 0
                 rightPadding: 0
                 topPadding: 0
