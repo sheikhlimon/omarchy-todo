@@ -732,7 +732,7 @@ Item {
                 border.color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
                 border.width: 1
                 Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
-                Layout.alignment: Qt.AlignLeft
+                Layout.alignment: Qt.AlignRight
 
                 Text {
                   id: timeText
