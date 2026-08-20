@@ -552,7 +552,7 @@ Item {
           Text {
             id: headerNoteLabel
             anchors.centerIn: parent
-            text: "Note (" + (root.allNotes || []).length + ")"
+            text: "notes (" + (root.allNotes || []).length + ")"
             color: root.activeTab === "notes" ? root.foreground : Style.tint(root.foreground, 0.8)
             font.family: root.fontFamily
             font.pixelSize: Style.font.body
