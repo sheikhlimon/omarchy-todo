@@ -818,32 +818,6 @@ Item {
               }
             }
 
-            // Right: Time Badge (Tasks only)
-            Rectangle {
-              visible: !isNoteItem
-              height: Style.space(20)
-              radius: Style.space(4)
-              color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemObj.status === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
-              border.color: isTaskRunning ? Color.green : (itemObj.status === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
-              border.width: 1
-              Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
-              Layout.alignment: Qt.AlignVCenter
-
-              Text {
-                id: timeText
-                anchors.centerIn: parent
-                text: itemObj.status === "in_progress"
-                  ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
-                  : (itemObj.status === "done"
-                    ? root.formatDoneBadge(itemObj, root.now)
-                    : root.formatCreationTime(itemObj.createdAt, root.now))
-                color: isTaskRunning ? Color.green : (itemObj.status === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.micro
-                font.bold: isTaskRunning || itemObj.status === "done"
-              }
-            }
-
             // Delete Button (Hover-reveal on ALL cards - Tasks & Notes)
             Rectangle {
               width: Style.space(20)
@@ -872,6 +846,32 @@ Item {
                     root.deleteTask(itemObj.id)
                   }
                 }
+              }
+            }
+
+            // Right: Time Badge (Tasks only)
+            Rectangle {
+              visible: !isNoteItem
+              height: Style.space(20)
+              radius: Style.space(4)
+              color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemObj.status === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
+              border.color: isTaskRunning ? Color.green : (itemObj.status === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
+              border.width: 1
+              Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
+              Layout.alignment: Qt.AlignVCenter
+
+              Text {
+                id: timeText
+                anchors.centerIn: parent
+                text: itemObj.status === "in_progress"
+                  ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
+                  : (itemObj.status === "done"
+                    ? root.formatDoneBadge(itemObj, root.now)
+                    : root.formatCreationTime(itemObj.createdAt, root.now))
+                color: isTaskRunning ? Color.green : (itemObj.status === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.micro
+                font.bold: isTaskRunning || itemObj.status === "done"
               }
             }
           }
