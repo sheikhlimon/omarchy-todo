@@ -660,52 +660,50 @@ Item {
             }
 
             // Center Content (Title for tasks / Markdown text for notes)
-            StackLayout {
+            Text {
+              visible: root.editingId !== itemObj.id
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignVCenter
-              currentIndex: root.editingId === itemObj.id ? 1 : 0
+              wrapMode: Text.Wrap
+              text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
+              textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
+              color: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
+              font.family: root.fontFamily
+              font.bold: (!isNoteItem && itemObj.status !== "done") || (isNoteItem && !isNoteDone)
+              font.pixelSize: Style.font.body
+              font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
+            }
 
-              Text {
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
-                textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
-                color: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
-                font.family: root.fontFamily
-                font.bold: (!isNoteItem && itemObj.status !== "done") || (isNoteItem && !isNoteDone)
-                font.pixelSize: Style.font.body
-                font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
-              }
-
-              QQC.TextArea {
-                id: editField
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.body
-                background: null
-                leftPadding: 0
-                rightPadding: 0
-                topPadding: 0
-                bottomPadding: 0
-                Keys.onReturnPressed: (event) => {
-                  if (event.modifiers & Qt.ShiftModifier) {
-                    event.accepted = false
-                  } else {
-                    event.accepted = true
-                    if (text.trim() !== "") {
-                      if (isNoteItem) root.updateNote(itemObj.id, text)
-                      else root.updateTask(itemObj.id, text)
-                    }
-                    root.editingId = ""
+            QQC.TextArea {
+              id: editField
+              visible: root.editingId === itemObj.id
+              Layout.fillWidth: true
+              Layout.alignment: Qt.AlignVCenter
+              wrapMode: Text.Wrap
+              text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
+              color: root.foreground
+              font.family: root.fontFamily
+              font.pixelSize: Style.font.body
+              background: null
+              leftPadding: 0
+              rightPadding: 0
+              topPadding: 0
+              bottomPadding: 0
+              Keys.onReturnPressed: (event) => {
+                if (event.modifiers & Qt.ShiftModifier) {
+                  event.accepted = false
+                } else {
+                  event.accepted = true
+                  if (text.trim() !== "") {
+                    if (isNoteItem) root.updateNote(itemObj.id, text)
+                    else root.updateTask(itemObj.id, text)
                   }
+                  root.editingId = ""
                 }
-                Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
-                Keys.onEscapePressed: root.editingId = ""
-                onVisibleChanged: if (visible) forceActiveFocus()
               }
+              Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
+              Keys.onEscapePressed: root.editingId = ""
+              onVisibleChanged: if (visible) forceActiveFocus()
             }
 
             // In-Progress Quick Checkmark to complete task (Always visible in progress tab)
