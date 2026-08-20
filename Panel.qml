@@ -145,11 +145,10 @@ Item {
   }
 
   function toggleNoteDone(id) {
-    var list = JSON.parse(JSON.stringify(root.allNotes || []))
-    var note = list.find(n => n.id === id)
+    var note = root.allNotes.find(n => n.id === id)
     if (note) {
       note.done = !note.done
-      root.allNotes = list
+      root.dataVersion++
       saveTasks()
     }
   }
@@ -175,24 +174,25 @@ Item {
   }
 
   function toggleTimer(task) {
-    var list = JSON.parse(JSON.stringify(root.allTasks))
-    var t = list.find(item => item.id === task.id)
+    var t = root.allTasks.find(item => item.id === task.id)
     if (!t) return
 
     if (!t.timer) {
       t.timer = { isRunning: false, lastStartedAt: null }
     }
 
+    var listChanged = false;
     if (t.status === "todo") {
       t.status = "in_progress"
+      listChanged = true;
     }
 
     if (t.timer.isRunning) {
       stopTimerObj(t)
     } else {
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].timer && list[i].timer.isRunning) {
-          stopTimerObj(list[i])
+      for (var i = 0; i < root.allTasks.length; i++) {
+        if (root.allTasks[i].timer && root.allTasks[i].timer.isRunning) {
+          stopTimerObj(root.allTasks[i])
         }
       }
       t.timer.isRunning = true
@@ -200,7 +200,11 @@ Item {
     }
 
     root.now = Date.now()
-    root.allTasks = list
+    if (listChanged) {
+      root.allTasks = root.allTasks.slice()
+    } else {
+      root.dataVersion++
+    }
     saveTasks()
   }
 
@@ -590,12 +594,13 @@ Item {
           radius: Style.space(8)
 
           property var itemObj: modelData
+          property string itemStatus: { var _ = root.dataVersion; return itemObj ? (itemObj.status || "") : "" }
           property bool isNoteItem: root.activeTab === "notes"
-          property bool isTaskRunning: !isNoteItem && itemObj && itemObj.timer && itemObj.timer.isRunning === true
-          property int liveDuration: isNoteItem ? 0 : root.getLiveTime(itemObj, root.now)
+          property bool isTaskRunning: { var _ = root.dataVersion; return !isNoteItem && itemObj && itemObj.timer && itemObj.timer.isRunning === true }
+          property int liveDuration: { var _ = root.dataVersion; return isNoteItem ? 0 : root.getLiveTime(itemObj, root.now) }
           property bool isHovered: cardHover.hovered
           property bool isItemFeedback: root.feedbackTaskId === (itemObj ? itemObj.id : "")
-          property bool isNoteDone: isNoteItem && itemObj && itemObj.done === true
+          property bool isNoteDone: { var _ = root.dataVersion; return isNoteItem && itemObj && itemObj.done === true }
 
           color: isTaskRunning ? Style.tint(Color.green, 0.08) : (isHovered ? Style.tint(root.foreground, 0.06) : Style.tint(root.foreground, 0.03))
           border.color: isTaskRunning ? Color.green : (isHovered ? Style.tint(root.foreground, 0.25) : Style.tint(root.foreground, 0.12))
@@ -621,20 +626,20 @@ Item {
               visible: !isNoteItem || isNoteDone || isHovered
               color: isNoteItem
                 ? (isNoteDone ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.06))
-                : (itemObj.status === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06)))
+                : (itemStatus === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06)))
               border.color: isNoteItem
                 ? (isNoteDone ? Color.green : Style.tint(root.foreground, 0.2))
-                : (itemObj.status === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2)))
+                : (itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2)))
               border.width: 1
 
               Text {
                 anchors.centerIn: parent
                 text: isNoteItem
                   ? (isNoteDone ? "✓" : "")
-                  : (itemObj.status === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶"))
+                  : (itemStatus === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶"))
                 color: isNoteItem
                   ? (isNoteDone ? Color.green : root.foreground)
-                  : (itemObj.status === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground))
+                  : (itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground))
                 font.family: root.fontFamily
                 font.bold: true
                 font.pixelSize: isNoteItem ? Style.font.small : Style.font.body
@@ -648,7 +653,7 @@ Item {
                   if (isNoteItem) {
                     root.toggleNoteDone(itemObj.id)
                   } else {
-                    if (itemObj.status === "done") {
+                    if (itemStatus === "done") {
                       root.moveTask(itemObj.id, "todo")
                     } else {
                       root.toggleTimer(itemObj)
@@ -666,11 +671,11 @@ Item {
               wrapMode: Text.Wrap
               text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
-              color: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
+              color: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
               font.family: root.fontFamily
-              font.weight: (!isNoteItem && itemObj.status !== "done") || (isNoteItem && !isNoteDone) ? 550 : 400
+              font.weight: (!isNoteItem && itemStatus !== "done") || (isNoteItem && !isNoteDone) ? 550 : 400
               font.pixelSize: Style.font.body
-              font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done")
+              font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done")
             }
 
             QQC.TextArea {
@@ -723,7 +728,7 @@ Item {
               color: completeMouse.containsMouse ? Style.tint(Color.green, 0.25) : Style.tint(Color.green, 0.15)
               border.color: Color.green
               border.width: 1
-              visible: !isNoteItem && itemObj.status === "in_progress"
+              visible: !isNoteItem && itemStatus === "in_progress"
               Layout.alignment: Qt.AlignVCenter
 
               Text {
@@ -854,8 +859,8 @@ Item {
               visible: !isNoteItem
               height: Style.space(20)
               radius: Style.space(4)
-              color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemObj.status === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
-              border.color: isTaskRunning ? Color.green : (itemObj.status === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
+              color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemStatus === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
+              border.color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
               border.width: 1
               Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
               Layout.alignment: Qt.AlignVCenter
@@ -863,15 +868,15 @@ Item {
               Text {
                 id: timeText
                 anchors.centerIn: parent
-                text: itemObj.status === "in_progress"
+                text: itemStatus === "in_progress"
                   ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
-                  : (itemObj.status === "done"
+                  : (itemStatus === "done"
                     ? root.formatDoneBadge(itemObj, root.now)
                     : root.formatCreationTime(itemObj.createdAt, root.now))
-                color: isTaskRunning ? Color.green : (itemObj.status === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
+                color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.micro
-                font.bold: isTaskRunning || itemObj.status === "done"
+                font.bold: isTaskRunning || itemStatus === "done"
               }
             }
           }
