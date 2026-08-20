@@ -508,19 +508,24 @@ Item {
         // Quick-Add Input
         Rectangle {
           Layout.fillWidth: true
-          height: Style.space(34)
+          implicitHeight: Math.min(Style.space(120), Math.max(Style.space(34), inputRow.implicitHeight + Style.space(12)))
           radius: Style.space(7)
           color: Style.tint(root.foreground, 0.03)
           border.color: itemInput.activeFocus ? root.foreground : Style.tint(root.foreground, 0.15)
           border.width: 1
 
           RowLayout {
+            id: inputRow
             anchors.fill: parent
             anchors.leftMargin: Style.space(8)
             anchors.rightMargin: Style.space(8)
+            anchors.topMargin: Style.space(6)
+            anchors.bottomMargin: Style.space(6)
             spacing: Style.space(6)
 
             Text {
+              Layout.alignment: Qt.AlignTop
+              Layout.topMargin: Style.space(1)
               text: "+"
               color: Style.tint(root.foreground, 0.5)
               font.family: root.fontFamily
@@ -528,33 +533,45 @@ Item {
               font.pixelSize: Style.font.body
             }
 
-            QQC.TextField {
-              id: itemInput
+            QQC.ScrollView {
               Layout.fillWidth: true
-              placeholderText: root.activeTab === "notes" ? "Add new note / item..." : "Add new task and press Enter..."
-              placeholderTextColor: Style.tint(root.foreground, 0.4)
-              color: root.foreground
-              font.family: root.fontFamily
-              font.pixelSize: Style.font.body
-              background: null
-              leftPadding: 0
-              rightPadding: 0
-              topPadding: 0
-              bottomPadding: 0
-              onAccepted: {
-                if (root.activeTab === "notes") {
-                  root.addNote(itemInput.text)
-                } else {
-                  root.addTask(itemInput.text)
+              Layout.fillHeight: true
+              QQC.ScrollBar.vertical.policy: QQC.ScrollBar.AsNeeded
+              clip: true
+
+              QQC.TextArea {
+                id: itemInput
+                wrapMode: Text.Wrap
+                placeholderText: root.activeTab === "notes" ? "Add new note..." : "Add new task..."
+                placeholderTextColor: Style.tint(root.foreground, 0.4)
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.body
+                background: null
+                leftPadding: 0
+                rightPadding: 0
+                topPadding: 0
+                bottomPadding: 0
+                Keys.onReturnPressed: (event) => {
+                  if (event.modifiers & Qt.ShiftModifier) {
+                    event.accepted = false
+                  } else {
+                    event.accepted = true
+                    var t = text
+                    text = ""
+                    if (root.activeTab === "notes") {
+                      root.addNote(t)
+                    } else {
+                      root.addTask(t)
+                    }
+                  }
                 }
-                itemInput.text = ""
+                Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
+                Keys.onEscapePressed: root.close()
               }
-              Keys.onEscapePressed: root.close()
             }
           }
         }
-
-        // Clean Note Mode Button [Note (count)]
         Rectangle {
           height: Style.space(34)
           radius: Style.space(7)
