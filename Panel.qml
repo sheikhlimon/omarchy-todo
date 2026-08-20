@@ -616,6 +616,14 @@ Item {
         QQC.ScrollBar.vertical: QQC.ScrollBar {
           active: true
         }
+        WheelHandler {
+          onWheel: (event) => {
+            var scrollAmount = event.angleDelta.y * 2.5;
+            var maxScroll = Math.max(0, itemsListView.contentHeight - itemsListView.height);
+            itemsListView.contentY = Math.max(0, Math.min(maxScroll, itemsListView.contentY - scrollAmount));
+            event.accepted = true;
+          }
+        }
 
         delegate: Rectangle {
           id: itemCard
