@@ -601,7 +601,7 @@ Item {
           height: implicitHeight
           radius: Style.space(8)
 
-          property var itemObj: modelData
+          property var itemObj: { var _ = root.dataVersion; return root.currentItemsList[index] || modelData }
           property string itemStatus: { var _ = root.dataVersion; return itemObj ? (itemObj.status || "") : "" }
           property bool isNoteItem: root.activeTab === "notes"
           property bool isTaskRunning: { var _ = root.dataVersion; return !isNoteItem && itemObj && itemObj.timer && itemObj.timer.isRunning === true }
