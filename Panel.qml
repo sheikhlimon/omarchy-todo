@@ -736,23 +736,24 @@ Item {
                 onClicked: root.moveTask(itemObj.id, "done")
               }
             }
-            // Edit Icon Button (Hover-only on ALL cards)
+            // Edit/Save Icon Button (Hover-only on ALL cards, always visible when editing)
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isHovered
-              color: editMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06)
-              border.color: editMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15)
+              visible: isHovered || root.editingId === itemObj.id
+              color: editMouse.containsMouse ? (root.editingId === itemObj.id ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.12)) : (root.editingId === itemObj.id ? Style.tint(Color.green, 0.1) : Style.tint(root.foreground, 0.06))
+              border.color: editMouse.containsMouse ? (root.editingId === itemObj.id ? Color.green : Style.tint(root.foreground, 0.3)) : (root.editingId === itemObj.id ? Style.tint(Color.green, 0.6) : Style.tint(root.foreground, 0.15))
               border.width: 1
               Layout.alignment: Qt.AlignVCenter
 
               Text {
                 anchors.centerIn: parent
-                text: "󰏫"
-                color: Style.tint(root.foreground, 0.85)
+                text: root.editingId === itemObj.id ? "✓" : "󰏫"
+                color: root.editingId === itemObj.id ? Color.green : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.micro
+                font.pixelSize: root.editingId === itemObj.id ? Style.font.small : Style.font.micro
+                font.bold: root.editingId === itemObj.id
               }
 
               MouseArea {
@@ -760,7 +761,17 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.editingId = itemObj.id
+                onClicked: {
+                  if (root.editingId === itemObj.id) {
+                    if (editField.text.trim() !== "") {
+                      if (isNoteItem) root.updateNote(itemObj.id, editField.text)
+                      else root.updateTask(itemObj.id, editField.text)
+                    }
+                    root.editingId = ""
+                  } else {
+                    root.editingId = itemObj.id
+                  }
+                }
               }
             }
 
