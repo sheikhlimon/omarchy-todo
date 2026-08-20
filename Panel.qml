@@ -626,6 +626,8 @@ Item {
             anchors.fill: parent
             anchors.leftMargin: Style.space(8)
             anchors.rightMargin: Style.space(8)
+            anchors.topMargin: Style.space(6)
+            anchors.bottomMargin: Style.space(6)
             spacing: Style.space(8)
 
             // Left Action Box: Play/Pause/Restart for tasks
@@ -633,7 +635,7 @@ Item {
               width: Style.space(26)
               height: Style.space(26)
               radius: Style.space(6)
-              Layout.alignment: Qt.AlignTop
+              Layout.alignment: Qt.AlignVCenter
               visible: !isNoteItem
               color: itemStatus === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06))
               border.color: itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2))
@@ -663,15 +665,16 @@ Item {
                 }
               }
             }
+
             // Center Content (Title for tasks / Markdown text for notes)
             Text {
               visible: root.editingId !== itemObj.id
               Layout.fillWidth: true
-              Layout.alignment: Qt.AlignTop
+              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
               wrapMode: Text.Wrap
               text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
-              color: !isNoteItem && itemStatus === "done" ? Style.tint(root.foreground, 0.4) : root.foreground
+              color: (!isNoteItem && itemStatus === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
               font.family: root.fontFamily
               font.weight: (!isNoteItem && itemStatus !== "done") || isNoteItem ? 550 : 400
               font.pixelSize: Style.font.body
@@ -682,7 +685,7 @@ Item {
               id: editField
               visible: root.editingId === itemObj.id
               Layout.fillWidth: true
-              Layout.alignment: Qt.AlignTop
+              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
               wrapMode: Text.Wrap
               text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               color: root.foreground
@@ -699,7 +702,7 @@ Item {
                 } else {
                   event.accepted = true
                   var newText = text
-                  var id = itemObj.id
+                  var id = itemObj ? itemObj.id : ""
                   var isNote = isNoteItem
                   root.editingId = ""
                   if (newText.trim() !== "") {
@@ -729,7 +732,7 @@ Item {
               border.color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
               border.width: 1
               Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
-              Layout.alignment: Qt.AlignTop
+              Layout.alignment: Qt.AlignVCenter
 
               Text {
                 id: timeText
@@ -738,7 +741,7 @@ Item {
                   ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
                   : (itemStatus === "done"
                     ? root.formatDoneBadge(itemObj, root.now)
-                    : root.formatCreationTime(itemObj.createdAt, root.now))
+                    : root.formatCreationTime(itemObj ? itemObj.createdAt : null, root.now))
                 color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.micro
@@ -755,15 +758,15 @@ Item {
               border.color: Color.green
               border.width: 1
               visible: !isNoteItem && itemStatus === "in_progress"
-              Layout.alignment: Qt.AlignTop
+              Layout.alignment: Qt.AlignVCenter
 
               Text {
                 anchors.centerIn: parent
                 text: "✓"
                 color: Color.green
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.small
                 font.bold: true
+                font.pixelSize: Style.font.small
               }
 
               MouseArea {
@@ -771,27 +774,29 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.moveTask(itemObj.id, "done")
+                onClicked: root.moveTask(itemObj ? itemObj.id : "", "done")
               }
             }
-            // Edit/Save Icon Button (Hover-only on ALL cards, always visible when editing)
+
+            // Edit / Save Icon
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isHovered || root.editingId === itemObj.id
-              color: editMouse.containsMouse ? (root.editingId === itemObj.id ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.12)) : (root.editingId === itemObj.id ? Style.tint(Color.green, 0.1) : Style.tint(root.foreground, 0.06))
-              border.color: editMouse.containsMouse ? (root.editingId === itemObj.id ? Color.green : Style.tint(root.foreground, 0.3)) : (root.editingId === itemObj.id ? Style.tint(Color.green, 0.6) : Style.tint(root.foreground, 0.15))
+              visible: isHovered || root.editingId === (itemObj ? itemObj.id : "")
+              color: editMouse.containsMouse ? (root.editingId === (itemObj ? itemObj.id : "") ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.12)) : (root.editingId === (itemObj ? itemObj.id : "") ? Style.tint(Color.green, 0.1) : Style.tint(root.foreground, 0.06))
+              border.color: editMouse.containsMouse ? (root.editingId === (itemObj ? itemObj.id : "") ? Color.green : Style.tint(root.foreground, 0.3)) : (root.editingId === (itemObj ? itemObj.id : "") ? Style.tint(Color.green, 0.6) : Style.tint(root.foreground, 0.15))
               border.width: 1
-              Layout.alignment: Qt.AlignTop
+              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+              Layout.topMargin: isNoteItem ? Style.space(2) : 0
 
               Text {
                 anchors.centerIn: parent
-                text: root.editingId === itemObj.id ? "✓" : "󰏫"
-                color: root.editingId === itemObj.id ? Color.green : Style.tint(root.foreground, 0.85)
+                text: root.editingId === (itemObj ? itemObj.id : "") ? "✓" : "󰏫"
+                color: root.editingId === (itemObj ? itemObj.id : "") ? Color.green : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
-                font.pixelSize: root.editingId === itemObj.id ? Style.font.small : Style.font.micro
-                font.bold: root.editingId === itemObj.id
+                font.pixelSize: root.editingId === (itemObj ? itemObj.id : "") ? Style.font.small : Style.font.micro
+                font.bold: root.editingId === (itemObj ? itemObj.id : "")
               }
 
               MouseArea {
@@ -800,9 +805,9 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                  if (root.editingId === itemObj.id) {
+                  if (root.editingId === (itemObj ? itemObj.id : "")) {
                     var newText = editField.text
-                    var id = itemObj.id
+                    var id = itemObj ? itemObj.id : ""
                     var isNote = isNoteItem
                     root.editingId = ""
                     if (newText.trim() !== "") {
@@ -812,32 +817,30 @@ Item {
                       })
                     }
                   } else {
-                    root.editingId = itemObj.id
+                    root.editingId = itemObj ? itemObj.id : ""
                   }
                 }
               }
             }
 
-
-            // Copy Icon Button (Hover-only on Notes cards)
+            // Copy Icon
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isNoteItem && (isHovered || isItemFeedback)
-              color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
-              border.color: isItemFeedback ? Color.green : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15))
+              visible: isHovered
+              color: copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06)
+              border.color: copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15)
               border.width: 1
-              Layout.alignment: Qt.AlignTop
+              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+              Layout.topMargin: isNoteItem ? Style.space(2) : 0
 
               Text {
-                id: copyLabel
                 anchors.centerIn: parent
-                text: isItemFeedback ? "✓" : "󰆏"
-                color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.85)
+                text: "󰆏"
+                color: Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
-                font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
-                font.bold: isItemFeedback
+                font.pixelSize: Style.font.micro
               }
 
               MouseArea {
@@ -845,26 +848,31 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.copyToClipboard(itemObj.text, itemObj.id)
+                onClicked: root.copyToClipboard(itemObj ? (itemObj.text || itemObj.title) : "", itemObj ? itemObj.id : "")
               }
             }
 
-            // Delete Button (Hover-reveal on ALL cards - Tasks & Notes)
+            // Delete Button (Hover)
             Rectangle {
-              width: Style.space(20)
-              height: Style.space(20)
-              radius: Style.space(4)
-              color: deleteMouse.containsMouse ? Style.tint(Color.red, 0.15) : "transparent"
+              width: Style.space(24)
+              height: Style.space(24)
+              radius: Style.space(5)
               visible: isHovered
-              Layout.alignment: Qt.AlignTop
+              color: deleteMouse.containsMouse ? Style.tint(Color.red, 0.15) : Style.tint(root.foreground, 0.06)
+              border.color: deleteMouse.containsMouse ? Color.red : Style.tint(root.foreground, 0.15)
+              border.width: 1
+              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+              Layout.topMargin: isNoteItem ? Style.space(2) : 0
 
               Text {
                 anchors.centerIn: parent
                 text: "✕"
-                color: Color.red
+                color: deleteMouse.containsMouse ? Color.red : Style.tint(root.foreground, 0.8)
+                font.family: root.fontFamily
                 font.pixelSize: Style.font.small
                 font.bold: true
               }
+
               MouseArea {
                 id: deleteMouse
                 anchors.fill: parent
@@ -872,14 +880,13 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   if (isNoteItem) {
-                    root.deleteNote(itemObj.id)
+                    root.deleteNote(itemObj ? itemObj.id : "")
                   } else {
-                    root.deleteTask(itemObj.id)
+                    root.deleteTask(itemObj ? itemObj.id : "")
                   }
                 }
               }
             }
-
           }
         }
 
