@@ -828,19 +828,21 @@ Item {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isHovered
-              color: copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06)
-              border.color: copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15)
+              visible: isNoteItem && (isHovered || isItemFeedback)
+              color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
+              border.color: isItemFeedback ? Color.green : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15))
               border.width: 1
               Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
               Layout.topMargin: isNoteItem ? Style.space(2) : 0
 
               Text {
+                id: copyLabel
                 anchors.centerIn: parent
-                text: "󰆏"
-                color: Style.tint(root.foreground, 0.85)
+                text: isItemFeedback ? "✓" : "󰆏"
+                color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.micro
+                font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
+                font.bold: isItemFeedback
               }
 
               MouseArea {
