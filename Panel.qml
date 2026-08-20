@@ -707,7 +707,12 @@ Item {
               }
               Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
               Keys.onEscapePressed: root.editingId = ""
-              onVisibleChanged: if (visible) forceActiveFocus()
+              onVisibleChanged: {
+                if (visible) {
+                  forceActiveFocus()
+                  cursorPosition = text.length
+                }
+              }
             }
 
             // In-Progress Quick Checkmark to complete task (Always visible in progress tab)
