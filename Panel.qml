@@ -17,6 +17,7 @@ Item {
   property string activeTab: "todo" // "todo" | "in_progress" | "done" | "notes"
   property var allTasks: []
   property var allNotes: []
+  property int dataVersion: 0
   property double now: Date.now()
   property string copyFeedbackText: ""
   property string feedbackTaskId: ""
@@ -121,27 +122,25 @@ Item {
 
   function updateNote(id, text) {
     if (!text || text.trim() === "") return
-    var list = JSON.parse(JSON.stringify(root.allNotes || []))
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].id === id) {
-        list[i].text = text.trim()
+    for (var i = 0; i < root.allNotes.length; i++) {
+      if (root.allNotes[i].id === id) {
+        root.allNotes[i].text = text.trim()
         break
       }
     }
-    root.allNotes = list
+    root.dataVersion++
     saveTasks()
   }
 
   function updateTask(id, title) {
     if (!title || title.trim() === "") return
-    var list = JSON.parse(JSON.stringify(root.allTasks || []))
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].id === id) {
-        list[i].title = title.trim()
+    for (var i = 0; i < root.allTasks.length; i++) {
+      if (root.allTasks[i].id === id) {
+        root.allTasks[i].title = title.trim()
         break
       }
     }
-    root.allTasks = list
+    root.dataVersion++
     saveTasks()
   }
 
@@ -665,7 +664,7 @@ Item {
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignVCenter
               wrapMode: Text.Wrap
-              text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
+              text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
               color: (isNoteItem && isNoteDone) || (!isNoteItem && itemObj.status === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
               font.family: root.fontFamily
@@ -680,7 +679,7 @@ Item {
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignVCenter
               wrapMode: Text.Wrap
-              text: isNoteItem ? (itemObj.text || "") : (itemObj.title || "")
+              text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               color: root.foreground
               font.family: root.fontFamily
               font.pixelSize: Style.font.body
