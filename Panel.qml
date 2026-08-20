@@ -612,7 +612,6 @@ Item {
           property int liveDuration: { var _ = root.dataVersion; return isNoteItem ? 0 : root.getLiveTime(itemObj, root.now) }
           property bool isHovered: cardHover.hovered
           property bool isItemFeedback: root.feedbackTaskId === (itemObj ? itemObj.id : "")
-          property bool isNoteDone: { var _ = root.dataVersion; return isNoteItem && itemObj && itemObj.done === true }
 
           color: isTaskRunning ? Style.tint(Color.green, 0.08) : (isHovered ? Style.tint(root.foreground, 0.06) : Style.tint(root.foreground, 0.03))
           border.color: isTaskRunning ? Color.green : (isHovered ? Style.tint(root.foreground, 0.25) : Style.tint(root.foreground, 0.12))
@@ -629,32 +628,24 @@ Item {
             anchors.rightMargin: Style.space(8)
             spacing: Style.space(8)
 
-            // Left Action Box: Play/Pause/Restart for tasks; Toggle Checkbox for notes
+            // Left Action Box: Play/Pause/Restart for tasks
             Rectangle {
-              width: isNoteItem ? Style.space(20) : Style.space(26)
-              height: isNoteItem ? Style.space(20) : Style.space(26)
-              radius: isNoteItem ? Style.space(5) : Style.space(6)
+              width: Style.space(26)
+              height: Style.space(26)
+              radius: Style.space(6)
               Layout.alignment: Qt.AlignVCenter
-              visible: !isNoteItem || isNoteDone || isHovered
-              color: isNoteItem
-                ? (isNoteDone ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.06))
-                : (itemStatus === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06)))
-              border.color: isNoteItem
-                ? (isNoteDone ? Color.green : Style.tint(root.foreground, 0.2))
-                : (itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2)))
+              visible: !isNoteItem
+              color: itemStatus === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06))
+              border.color: itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2))
               border.width: 1
 
               Text {
                 anchors.centerIn: parent
-                text: isNoteItem
-                  ? (isNoteDone ? "✓" : "")
-                  : (itemStatus === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶"))
-                color: isNoteItem
-                  ? (isNoteDone ? Color.green : root.foreground)
-                  : (itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground))
+                text: itemStatus === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶")
+                color: itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground)
                 font.family: root.fontFamily
                 font.bold: true
-                font.pixelSize: isNoteItem ? Style.font.small : Style.font.body
+                font.pixelSize: Style.font.body
               }
 
               MouseArea {
@@ -662,9 +653,7 @@ Item {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                  if (isNoteItem) {
-                    root.toggleNoteDone(itemObj.id)
-                  } else {
+                  if (!isNoteItem) {
                     if (itemStatus === "done") {
                       root.moveTask(itemObj.id, "todo")
                     } else {
@@ -674,7 +663,6 @@ Item {
                 }
               }
             }
-
             // Center Content (Title for tasks / Markdown text for notes)
             Text {
               visible: root.editingId !== itemObj.id
@@ -683,11 +671,11 @@ Item {
               wrapMode: Text.Wrap
               text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
-              color: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
+              color: !isNoteItem && itemStatus === "done" ? Style.tint(root.foreground, 0.4) : root.foreground
               font.family: root.fontFamily
-              font.weight: (!isNoteItem && itemStatus !== "done") || (isNoteItem && !isNoteDone) ? 550 : 400
+              font.weight: (!isNoteItem && itemStatus !== "done") || isNoteItem ? 550 : 400
               font.pixelSize: Style.font.body
-              font.strikeout: (isNoteItem && isNoteDone) || (!isNoteItem && itemStatus === "done")
+              font.strikeout: !isNoteItem && itemStatus === "done"
             }
 
             QQC.TextArea {
