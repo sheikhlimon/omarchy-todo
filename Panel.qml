@@ -614,8 +614,8 @@ Item {
 
             // Left Action Box: Play/Pause/Restart for tasks; Toggle Checkbox for notes
             Rectangle {
-              width: Style.space(26)
-              height: Style.space(26)
+              width: isNoteItem ? Style.space(20) : Style.space(26)
+              height: isNoteItem ? Style.space(20) : Style.space(26)
               radius: isNoteItem ? Style.space(5) : Style.space(6)
               Layout.alignment: Qt.AlignVCenter
               visible: !isNoteItem || isNoteDone || isHovered
@@ -637,7 +637,7 @@ Item {
                   : (itemObj.status === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground))
                 font.family: root.fontFamily
                 font.bold: true
-                font.pixelSize: Style.font.body
+                font.pixelSize: isNoteItem ? Style.font.small : Style.font.body
               }
 
               MouseArea {
