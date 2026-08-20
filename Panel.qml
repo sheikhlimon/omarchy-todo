@@ -24,6 +24,7 @@ Item {
 
   readonly property string jsonPath: Quickshell.env("HOME") + "/.local/share/to-do/tasks.json"
   readonly property string mdPath: Quickshell.env("HOME") + "/.local/share/to-do/tasks.md"
+  readonly property string helperPath: Qt.resolvedUrl("helper.sh").toString().replace("file://", "")
 
   readonly property var runningTask: {
     var list = root.allTasks || []
@@ -69,10 +70,7 @@ Item {
 
   function copyToClipboard(text, id) {
     if (!text) return
-    copyProc.exec(["node", "-e", `
-      const { execFileSync } = require('child_process');
-      execFileSync('wl-copy', [], { input: process.argv[1] });
-    `, text])
+    copyProc.exec([root.helperPath, "copy", text])
     root.feedbackTaskId = id || "global"
     root.copyFeedbackText = "✓ Copied!"
     feedbackTimer.restart()
@@ -84,61 +82,7 @@ Item {
       notes: root.allNotes,
       tasks: root.allTasks
     }
-    writeProc.exec(["node", "-e", `
-      const fs = require('fs');
-      const path = require('path');
-      const jsonP = "${root.jsonPath}";
-      const mdP = "${root.mdPath}";
-      const tasks = ${JSON.stringify(root.allTasks)};
-      const notes = ${JSON.stringify(root.allNotes)};
-
-      fs.mkdirSync(path.dirname(jsonP), { recursive: true });
-      fs.writeFileSync(jsonP, JSON.stringify({ version: 1, notes, tasks }, null, 2));
-
-      function fmtHuman(sec) {
-        if (!sec || sec <= 0) return '0s';
-        const h = Math.floor(sec / 3600);
-        const m = Math.floor((sec % 3600) / 60);
-        const s = sec % 60;
-        if (h > 0) return h + 'h' + (m > 0 ? ' ' + m + 'm' : '');
-        if (m > 0) return m + 'm' + (s > 0 ? ' ' + s + 's' : '');
-        return s + 's';
-      }
-
-      let md = "# 📋 Tasks & Time Log\\n\\n";
-
-      if (notes && notes.length > 0) {
-        md += "## 📝 Notes & Checklists\\n";
-        for (const n of notes) {
-          const check = n.done ? "[x] " : "[ ] ";
-          md += "- " + check + n.text + " <!-- id:" + n.id + " -->\\n";
-        }
-        md += "\\n";
-      }
-
-      md += "## 📋 To-Do\\n";
-      const todos = tasks.filter(t => t.status === 'todo');
-      if (todos.length === 0) md += "_No tasks_\\n";
-      for (const t of todos) md += "- [ ] " + t.title + " <!-- id:" + t.id + " -->\\n";
-
-      md += "\\n## ⚡ Progress\\n";
-      const inProgs = tasks.filter(t => t.status === 'in_progress');
-      if (inProgs.length === 0) md += "_No tasks_\\n";
-      for (const t of inProgs) {
-        const spent = t.timeSpentSeconds || 0;
-        md += "- [/] " + t.title + " (spent: " + fmtHuman(spent) + ") <!-- id:" + t.id + " -->\\n";
-      }
-
-      md += "\\n## ✅ Done\\n";
-      const dones = tasks.filter(t => t.status === 'done');
-      if (dones.length === 0) md += "_No completed tasks_\\n";
-      for (const t of dones) {
-        const spent = t.timeSpentSeconds || 0;
-        md += "- [x] " + t.title + " (completed in " + fmtHuman(spent) + ") <!-- id:" + t.id + " -->\\n";
-      }
-
-      fs.writeFileSync(mdP, md, 'utf-8');
-    `])
+    writeProc.exec([root.helperPath, "write", root.jsonPath, root.mdPath, JSON.stringify(root.allNotes), JSON.stringify(root.allTasks)])
   }
 
   function addTask(title) {
@@ -353,16 +297,7 @@ Item {
 
   Process {
     id: readProc
-    command: ["node", "-e", `
-      const fs = require('fs');
-      const p = "${root.jsonPath}";
-      if (fs.existsSync(p)) {
-        try {
-          const data = JSON.parse(fs.readFileSync(p, 'utf-8'));
-          console.log(JSON.stringify(data));
-        } catch(e) { console.log("{}"); }
-      } else { console.log("{}"); }
-    `]
+    command: [root.helperPath, "read", root.jsonPath]
     stdout: SplitParser {
       onRead: data => {
         try {

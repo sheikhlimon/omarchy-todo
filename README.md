@@ -15,6 +15,13 @@ A native [Omarchy](https://omarchy.org/) bar plugin for task management, live st
 - **Theme Adaptive**: Automatically matches your active Omarchy color scheme and typography.
 - **Zero Overhead**: Native in-process Quickshell layer with persistent storage in `~/.local/share/to-do/`.
 
+## Dependencies
+
+This plugin requires the following standard Omarchy CLI tools to be installed on your system:
+
+- **`jq`**: Required for reading and formatting JSON and Markdown data.
+- **`wl-clipboard`**: Required for the one-click copy functionality in notes.
+
 ## Install
 
 The recommended way to install and enable the plugin:
