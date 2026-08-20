@@ -592,7 +592,11 @@ Item {
         Layout.fillHeight: true
         clip: true
         spacing: Style.space(6)
+        cacheBuffer: 3000
         model: root.currentItemsList
+        ScrollBar.vertical: ScrollBar {
+          active: true
+        }
 
         delegate: Rectangle {
           id: itemCard
