@@ -633,7 +633,7 @@ Item {
               width: Style.space(26)
               height: Style.space(26)
               radius: Style.space(6)
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
               visible: !isNoteItem
               color: itemStatus === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06))
               border.color: itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2))
@@ -667,7 +667,7 @@ Item {
             Text {
               visible: root.editingId !== itemObj.id
               Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
               wrapMode: Text.Wrap
               text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
@@ -682,7 +682,7 @@ Item {
               id: editField
               visible: root.editingId === itemObj.id
               Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
               wrapMode: Text.Wrap
               text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
               color: root.foreground
@@ -729,7 +729,7 @@ Item {
               border.color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
               border.width: 1
               Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
 
               Text {
                 id: timeText
@@ -755,7 +755,7 @@ Item {
               border.color: Color.green
               border.width: 1
               visible: !isNoteItem && itemStatus === "in_progress"
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
 
               Text {
                 anchors.centerIn: parent
@@ -783,7 +783,7 @@ Item {
               color: editMouse.containsMouse ? (root.editingId === itemObj.id ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.12)) : (root.editingId === itemObj.id ? Style.tint(Color.green, 0.1) : Style.tint(root.foreground, 0.06))
               border.color: editMouse.containsMouse ? (root.editingId === itemObj.id ? Color.green : Style.tint(root.foreground, 0.3)) : (root.editingId === itemObj.id ? Style.tint(Color.green, 0.6) : Style.tint(root.foreground, 0.15))
               border.width: 1
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
 
               Text {
                 anchors.centerIn: parent
@@ -828,7 +828,7 @@ Item {
               color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
               border.color: isItemFeedback ? Color.green : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15))
               border.width: 1
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
 
               Text {
                 id: copyLabel
@@ -856,7 +856,7 @@ Item {
               radius: Style.space(4)
               color: deleteMouse.containsMouse ? Style.tint(Color.red, 0.15) : "transparent"
               visible: isHovered
-              Layout.alignment: Qt.AlignVCenter
+              Layout.alignment: Qt.AlignTop
 
               Text {
                 anchors.centerIn: parent
