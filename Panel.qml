@@ -550,7 +550,7 @@ Item {
                 background: null
                 leftPadding: 0
                 rightPadding: 0
-                topPadding: 0
+                topPadding: Style.space(2)
                 bottomPadding: 0
                 Keys.onReturnPressed: (event) => {
                   if (event.modifiers & Qt.ShiftModifier) {
