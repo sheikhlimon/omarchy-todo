@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "limon.todo",
   "name": "Tasks & Time Tracker",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": "Sheikh Limon",
   "license": "MIT",
   "description": "Native task tracker, live stopwatch timer, and Markdown notes widget for the Omarchy bar",

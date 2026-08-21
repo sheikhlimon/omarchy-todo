@@ -744,9 +744,13 @@ Item {
                 }
               }
               Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
-              Keys.onEscapePressed: root.editingId = ""
+              Keys.onEscapePressed: {
+                text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
+                root.editingId = ""
+              }
               onVisibleChanged: {
                 if (visible) {
+                  text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
                   forceActiveFocus()
                   cursorPosition = text.length
                 }
@@ -903,7 +907,10 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.editingId = ""
+                onClicked: {
+                  editField.text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
+                  root.editingId = ""
+                }
               }
             }
 
