@@ -2,10 +2,7 @@
 
 A native [Omarchy](https://omarchy.org/) bar plugin for task management, live stopwatch tracking, and Markdown notes.
 
-<p align="center">
-  <img src="assets/omarchy-todo.png" alt="Tasks & Time Tracker" width="380">
-  <img src="assets/omarchy-notes.png" alt="Markdown Notes & Checklists" width="380">
-</p>
+![Tasks & Time Tracker Preview](assets/preview.png)
 
 ## Features
 
