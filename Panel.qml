@@ -36,10 +36,15 @@ Item {
   readonly property bool hasRunningTask: runningTask !== null
   readonly property string activeTimerText: runningTask ? (runningTask.title || "") : ""
 
-  readonly property color foreground: Color.popups.text
+  readonly property color foreground: bar ? bar.foreground : Color.foreground
+  readonly property color dim: Color.muted
   readonly property color bg: Color.popups.background
   readonly property color borderCol: Color.popups.border
+  readonly property color selectedBackground: Color.menu.selectedBackground
+  readonly property color selectedText: Color.menu.selectedText
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
+  readonly property bool isLightMode: (bg.r * 0.299 + bg.g * 0.587 + bg.b * 0.114) > 0.5
+  readonly property color cardBackground: isLightMode ? "#FFFFFF" : Util.alpha(foreground, 0.05)
 
   function open() {
     root.opened = true
@@ -124,35 +129,41 @@ Item {
 
   function updateNote(id, text) {
     if (!text || text.trim() === "") return
-    for (var i = 0; i < root.allNotes.length; i++) {
-      if (root.allNotes[i].id === id) {
-        root.allNotes[i].text = text.trim()
+    var list = JSON.parse(JSON.stringify(root.allNotes || []))
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        list[i].text = text.trim()
         break
       }
     }
+    root.allNotes = list
     root.dataVersion++
     saveTasks()
   }
 
   function updateTask(id, title) {
     if (!title || title.trim() === "") return
-    for (var i = 0; i < root.allTasks.length; i++) {
-      if (root.allTasks[i].id === id) {
-        root.allTasks[i].title = title.trim()
+    var list = JSON.parse(JSON.stringify(root.allTasks || []))
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        list[i].title = title.trim()
         break
       }
     }
+    root.allTasks = list
     root.dataVersion++
     saveTasks()
   }
 
   function toggleNoteDone(id) {
-    for (var i = 0; i < root.allNotes.length; i++) {
-      if (root.allNotes[i].id === id) {
-        root.allNotes[i].done = !root.allNotes[i].done
+    var list = JSON.parse(JSON.stringify(root.allNotes || []))
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        list[i].done = !list[i].done
         break
       }
     }
+    root.allNotes = list
     root.dataVersion++
     saveTasks()
   }
@@ -373,6 +384,7 @@ Item {
   }
 
   property var currentItemsList: {
+    var _ = root.dataVersion
     if (root.activeTab === "notes") {
       return root.allNotes || []
     }
@@ -386,619 +398,531 @@ Item {
     owner: root.host || root
     bar: root.bar
     open: root.opened
-    contentWidth: Style.space(420)
-    contentHeight: Style.space(480)
+    focusTarget: keyCatcher
+    contentWidth: popupPanel.fittedContentWidth(Style.space(380))
+    contentHeight: popupPanel.fittedContentHeight(column.implicitHeight, Style.space(560))
 
-    ColumnLayout {
+    PanelKeyCatcher {
+      id: keyCatcher
       anchors.fill: parent
-      spacing: Style.space(10)
+      onCloseRequested: root.close()
 
-      // Header: Title & Copy Toast
-      RowLayout {
-        Layout.fillWidth: true
-        spacing: Style.space(8)
-
-        Text {
-          text: "◩ Tasks & Time Tracker"
-          color: root.foreground
-          font.family: root.fontFamily
-          font.pixelSize: Style.font.title
-          font.bold: true
-          Layout.fillWidth: true
-        }
-
-        Text {
-          text: root.copyFeedbackText
-          color: Color.green
-          font.family: root.fontFamily
-          font.pixelSize: Style.font.small
-          font.bold: true
-          visible: root.copyFeedbackText.length > 0
-        }
-      }
-
-      // Top Tabs: Guaranteed Equal Sizing (Exact 1/3 Width Each)
-      RowLayout {
-        Layout.fillWidth: true
-        spacing: Style.space(6)
-
-        // To-Do Tab
-        Rectangle {
-          Layout.fillWidth: true
-          Layout.preferredWidth: 0
-          Layout.minimumWidth: 0
-          height: Style.space(30)
-          radius: Style.space(7)
-          color: root.activeTab === "todo" ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)
-          border.color: root.activeTab === "todo" ? root.foreground : Style.tint(root.foreground, 0.15)
-          border.width: root.activeTab === "todo" ? 1.5 : 1
-
-          Text {
-            anchors.centerIn: parent
-            text: "to-do (" + (root.allTasks || []).filter(t => t.status === "todo").length + ")"
-            color: root.activeTab === "todo" ? root.foreground : Style.tint(root.foreground, 0.7)
-            font.family: root.fontFamily
-            font.bold: root.activeTab === "todo"
-            font.pixelSize: Style.font.small
-          }
-          MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.activeTab = "todo"
-          }
-        }
-
-        // Progress Tab
-        Rectangle {
-          Layout.fillWidth: true
-          Layout.preferredWidth: 0
-          Layout.minimumWidth: 0
-          height: Style.space(30)
-          radius: Style.space(7)
-          color: root.activeTab === "in_progress" ? Style.tint(Color.yellow, 0.18) : Style.tint(root.foreground, 0.03)
-          border.color: root.activeTab === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15)
-          border.width: root.activeTab === "in_progress" ? 1.5 : 1
-
-          Text {
-            anchors.centerIn: parent
-            text: "progress (" + (root.allTasks || []).filter(t => t.status === "in_progress").length + ")"
-            color: root.activeTab === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.7)
-            font.family: root.fontFamily
-            font.bold: root.activeTab === "in_progress"
-            font.pixelSize: Style.font.small
-          }
-          MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.activeTab = "in_progress"
-          }
-        }
-
-        // Done Tab
-        Rectangle {
-          Layout.fillWidth: true
-          Layout.preferredWidth: 0
-          Layout.minimumWidth: 0
-          height: Style.space(30)
-          radius: Style.space(7)
-          color: root.activeTab === "done" ? Style.tint(Color.green, 0.18) : Style.tint(root.foreground, 0.03)
-          border.color: root.activeTab === "done" ? Color.green : Style.tint(root.foreground, 0.15)
-          border.width: root.activeTab === "done" ? 1.5 : 1
-
-          Text {
-            anchors.centerIn: parent
-            text: "done (" + (root.allTasks || []).filter(t => t.status === "done").length + ")"
-            color: root.activeTab === "done" ? Color.green : Style.tint(root.foreground, 0.7)
-            font.family: root.fontFamily
-            font.bold: root.activeTab === "done"
-            font.pixelSize: Style.font.small
-          }
-          MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.activeTab = "done"
-          }
-        }
-      }
-
-      // Header Action Row: Quick Add Input + Note Toggle Button
-      RowLayout {
-        Layout.fillWidth: true
-        spacing: Style.space(6)
-
-        // Quick-Add Input
-        Rectangle {
-          Layout.fillWidth: true
-          implicitHeight: Math.min(Style.space(120), Math.max(Style.space(34), inputRow.implicitHeight + Style.space(12)))
-          radius: Style.space(7)
-          color: Style.tint(root.foreground, 0.03)
-          border.color: itemInput.activeFocus ? root.foreground : Style.tint(root.foreground, 0.15)
-          border.width: 1
-
-          RowLayout {
-            id: inputRow
-            anchors.fill: parent
-            anchors.leftMargin: Style.space(8)
-            anchors.rightMargin: Style.space(8)
-            anchors.topMargin: Style.space(6)
-            anchors.bottomMargin: Style.space(6)
-            spacing: Style.space(6)
-
-            Text {
-              Layout.alignment: Qt.AlignTop
-              Layout.topMargin: Style.space(1)
-              text: "+"
-              color: Style.tint(root.foreground, 0.5)
-              font.family: root.fontFamily
-              font.bold: true
-              font.pixelSize: Style.font.body
-            }
-
-            QQC.ScrollView {
-              Layout.fillWidth: true
-              Layout.fillHeight: true
-              QQC.ScrollBar.vertical.policy: QQC.ScrollBar.AsNeeded
-              clip: true
-
-              QQC.TextArea {
-                id: itemInput
-                wrapMode: Text.Wrap
-                placeholderText: root.activeTab === "notes" ? "Add new note..." : "Add new task..."
-                placeholderTextColor: Style.tint(root.foreground, 0.4)
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.body
-                background: null
-                leftPadding: 0
-                rightPadding: 0
-                topPadding: Style.space(2)
-                bottomPadding: 0
-                Keys.onReturnPressed: (event) => {
-                  if (event.modifiers & Qt.ShiftModifier) {
-                    event.accepted = false
-                  } else {
-                    event.accepted = true
-                    var t = text
-                    text = ""
-                    if (root.activeTab === "notes") {
-                      root.addNote(t)
-                    } else {
-                      root.addTask(t)
-                    }
-                  }
-                }
-                Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
-                Keys.onEscapePressed: root.close()
-              }
-            }
-          }
-        }
-        Rectangle {
-          height: Style.space(34)
-          radius: Style.space(7)
-          color: root.activeTab === "notes" ? Style.tint(root.foreground, 0.08) : Style.tint(root.foreground, 0.03)
-          border.color: root.activeTab === "notes" ? root.foreground : Style.tint(root.foreground, 0.15)
-          border.width: root.activeTab === "notes" ? 1.5 : 1
-          Layout.preferredWidth: headerNoteLabel.implicitWidth + Style.space(20)
-
-          Text {
-            id: headerNoteLabel
-            anchors.centerIn: parent
-            text: "notes (" + (root.allNotes || []).length + ")"
-            color: root.activeTab === "notes" ? root.foreground : Style.tint(root.foreground, 0.85)
-            font.family: root.fontFamily
-            font.pixelSize: Style.font.body
-            font.bold: root.activeTab === "notes"
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-              if (root.activeTab === "notes") {
-                root.activeTab = "todo"
-              } else {
-                root.activeTab = "notes"
-              }
-            }
-          }
-        }
-      }
-
-      // Card List View
-      ListView {
-        id: itemsListView
-        Layout.fillWidth: true
-        Layout.fillHeight: true
+      Flickable {
+        id: panelFlick
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: column.implicitHeight
         clip: true
-        spacing: Style.space(6)
-        cacheBuffer: 1000
-        model: root.currentItemsList
-        QQC.ScrollBar.vertical: QQC.ScrollBar {
-          active: true
-        }
-        WheelHandler {
-          onWheel: (event) => {
-            var scrollAmount = event.angleDelta.y * 2.5;
-            var maxScroll = Math.max(0, itemsListView.contentHeight - itemsListView.height);
-            itemsListView.contentY = Math.max(0, Math.min(maxScroll, itemsListView.contentY - scrollAmount));
-            event.accepted = true;
+        boundsBehavior: Flickable.StopAtBounds
+        flickableDirection: Flickable.VerticalFlick
+        interactive: contentHeight > height
+        QQC.ScrollBar.vertical: QQC.ScrollBar { policy: QQC.ScrollBar.AsNeeded }
+
+        Column {
+          id: column
+          width: panelFlick.width
+          spacing: Style.space(10)
+
+          // ---------- Tab switch (Matching Omanews 1:1) ----------
+          Row {
+            id: tabSwitch
+            width: parent.width
+            spacing: Style.space(4)
+
+            readonly property var tabDefs: [
+              { id: "todo", name: "To-Do" },
+              { id: "in_progress", name: "Progress" },
+              { id: "done", name: "Done" },
+              { id: "notes", name: "Notes" }
+            ]
+            readonly property real cellWidth: (width - spacing * (tabDefs.length - 1)) / tabDefs.length
+
+            Repeater {
+              model: tabSwitch.tabDefs
+
+              Button {
+                required property var modelData
+                required property int index
+
+                width: tabSwitch.cellWidth
+                text: {
+                  var _ = root.dataVersion
+                  var count = 0
+                  if (modelData.id === "notes") {
+                    count = (root.allNotes || []).length
+                  } else {
+                    count = (root.allTasks || []).filter(t => t.status === modelData.id).length
+                  }
+                  return modelData.name + " (" + count + ")"
+                }
+                selected: modelData.id === root.activeTab
+                bordered: true
+                foreground: root.foreground
+                fontFamily: root.fontFamily
+                fontSize: Style.font.bodySmall
+                verticalPadding: Style.spacing.controlPaddingY
+                onClicked: root.activeTab = modelData.id
+              }
+            }
           }
-        }
 
-        delegate: Rectangle {
-          id: itemCard
-          width: itemsListView.width
-          implicitHeight: Math.max(Style.space(44), itemRow.implicitHeight + Style.space(12))
-          height: implicitHeight
-          radius: Style.space(8)
+          // ---------- Quick-Add Input ----------
+          Rectangle {
+            width: parent.width
+            implicitHeight: Math.min(Style.space(120), Math.max(Style.space(38), itemInput.contentHeight + Style.space(16)))
+            radius: Style.cornerRadius
+            color: "transparent"
+            border.color: itemInput.activeFocus ? Color.accent : Util.alpha(root.foreground, 0.15)
+            border.width: itemInput.activeFocus ? 1.5 : 1
 
-          property var itemObj: { var _ = root.dataVersion; return root.currentItemsList[index] || modelData }
-          property string itemStatus: { var _ = root.dataVersion; return itemObj ? (itemObj.status || "") : "" }
-          property bool isNoteItem: root.activeTab === "notes"
-          property bool isEditingThis: root.editingId === (itemObj ? itemObj.id : "")
-          property bool isTaskRunning: { var _ = root.dataVersion; return !isNoteItem && itemObj && itemObj.timer && itemObj.timer.isRunning === true }
-          property int liveDuration: { var _ = root.dataVersion; return isNoteItem ? 0 : root.getLiveTime(itemObj, root.now) }
-          property bool isHovered: cardHover.hovered
-          property bool isItemFeedback: root.feedbackTaskId === (itemObj ? itemObj.id : "")
-
-          color: isTaskRunning ? Style.tint(Color.green, 0.08) : (isHovered ? Style.tint(root.foreground, 0.06) : Style.tint(root.foreground, 0.03))
-          border.color: isTaskRunning ? Color.green : (isHovered ? Style.tint(root.foreground, 0.25) : Style.tint(root.foreground, 0.12))
-          border.width: isTaskRunning ? 1.5 : 1
-
-          HoverHandler {
-            id: cardHover
-          }
-
-          RowLayout {
-            id: itemRow
-            anchors.fill: parent
-            anchors.leftMargin: Style.space(8)
-            anchors.rightMargin: Style.space(8)
-            anchors.topMargin: Style.space(6)
-            anchors.bottomMargin: Style.space(6)
-            spacing: Style.space(8)
-
-            // Left Action Box: Play/Pause/Restart for tasks
-            Rectangle {
-              width: Style.space(26)
-              height: Style.space(26)
-              radius: Style.space(6)
-              Layout.alignment: Qt.AlignVCenter
-              visible: !isNoteItem
-              color: itemStatus === "done" ? Style.tint(Color.blue, 0.15) : (isTaskRunning ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.06))
-              border.color: itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : Style.tint(root.foreground, 0.2))
-              border.width: 1
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.space(10)
+              anchors.rightMargin: Style.space(10)
+              spacing: Style.space(8)
 
               Text {
-                anchors.centerIn: parent
-                anchors.horizontalCenterOffset: text === "▶" ? 1 : 0
-                text: itemStatus === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶")
-                color: itemStatus === "done" ? Color.blue : (isTaskRunning ? Color.green : root.foreground)
+                Layout.alignment: Qt.AlignVCenter
+                text: "+"
+                color: itemInput.activeFocus ? Color.accent : Util.alpha(root.foreground, 0.5)
                 font.family: root.fontFamily
                 font.bold: true
-                font.pixelSize: Style.font.body
+                font.pixelSize: Style.font.subtitle
               }
 
-              MouseArea {
-                id: leftBtnMouse
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                  if (!isNoteItem) {
-                    if (itemStatus === "done") {
-                      root.moveTask(itemObj.id, "todo")
+              QQC.ScrollView {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+                Layout.maximumHeight: Style.space(100)
+                QQC.ScrollBar.vertical.policy: QQC.ScrollBar.AsNeeded
+                clip: true
+
+                QQC.TextArea {
+                  id: itemInput
+                  wrapMode: Text.Wrap
+                  verticalAlignment: Text.AlignVCenter
+                  placeholderText: root.activeTab === "notes" ? "Add new note..." : "Add new task..."
+                  placeholderTextColor: Util.alpha(root.foreground, 0.4)
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.bold: true
+                  font.pixelSize: Style.font.subtitle
+                  background: null
+                  leftPadding: 0
+                  rightPadding: 0
+                  topPadding: Style.space(6)
+                  bottomPadding: Style.space(6)
+                  Keys.onReturnPressed: (event) => {
+                    if (event.modifiers & Qt.ShiftModifier) {
+                      event.accepted = false
                     } else {
-                      root.toggleTimer(itemObj)
+                      event.accepted = true
+                      var t = text
+                      text = ""
+                      if (root.activeTab === "notes") {
+                        root.addNote(t)
+                      } else {
+                        root.addTask(t)
+                      }
                     }
                   }
-                }
-              }
-            }
-
-            // Center Content (Title for tasks / Markdown text for notes)
-            Text {
-              visible: !isEditingThis
-              Layout.fillWidth: true
-              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
-              wrapMode: Text.Wrap
-              text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
-              textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
-              color: (!isNoteItem && itemStatus === "done") ? Style.tint(root.foreground, 0.4) : root.foreground
-              font.family: root.fontFamily
-              font.weight: (!isNoteItem && itemStatus !== "done") || isNoteItem ? 550 : 400
-              font.pixelSize: Style.font.body
-              font.strikeout: !isNoteItem && itemStatus === "done"
-            }
-
-            QQC.TextArea {
-              id: editField
-              visible: isEditingThis
-              Layout.fillWidth: true
-              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
-              wrapMode: Text.Wrap
-              text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
-              color: root.foreground
-              font.family: root.fontFamily
-              font.pixelSize: Style.font.body
-              background: null
-              leftPadding: 0
-              rightPadding: 0
-              topPadding: 0
-              bottomPadding: 0
-              Keys.onReturnPressed: (event) => {
-                if (event.modifiers & Qt.ShiftModifier) {
-                  event.accepted = false
-                } else {
-                  event.accepted = true
-                  var newText = text
-                  var id = itemObj ? itemObj.id : ""
-                  var isNote = isNoteItem
-                  root.editingId = ""
-                  if (newText.trim() !== "") {
-                    Qt.callLater(function() {
-                      if (isNote) root.updateNote(id, newText)
-                      else root.updateTask(id, newText)
-                    })
-                  }
-                }
-              }
-              Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
-              Keys.onEscapePressed: {
-                text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
-                root.editingId = ""
-              }
-              onVisibleChanged: {
-                if (visible) {
-                  text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
-                  forceActiveFocus()
-                  cursorPosition = text.length
-                }
-              }
-            }
-
-            // Time Badge (Tasks only) - Placed before the action buttons
-            Rectangle {
-              visible: !isNoteItem && !isEditingThis
-              height: Style.space(20)
-              radius: Style.space(4)
-              color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemStatus === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
-              border.color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.15))
-              border.width: 1
-              Layout.preferredWidth: timeText.implicitWidth + Style.space(10)
-              Layout.alignment: Qt.AlignVCenter
-
-              Text {
-                id: timeText
-                anchors.centerIn: parent
-                text: itemStatus === "in_progress"
-                  ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
-                  : (itemStatus === "done"
-                    ? root.formatDoneBadge(itemObj, root.now)
-                    : root.formatCreationTime(itemObj ? itemObj.createdAt : null, root.now))
-                color: isTaskRunning ? Color.green : (itemStatus === "in_progress" ? Color.yellow : Style.tint(root.foreground, 0.75))
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.micro
-                font.bold: isTaskRunning || itemStatus === "done"
-              }
-            }
-
-            // In-Progress Quick Checkmark to complete task (Hidden while editing to avoid duplicate OK buttons)
-            Rectangle {
-              width: Style.space(24)
-              height: Style.space(24)
-              radius: Style.space(5)
-              color: completeMouse.containsMouse ? Style.tint(Color.green, 0.15) : Style.tint(root.foreground, 0.06)
-              border.color: completeMouse.containsMouse ? Color.green : Style.tint(root.foreground, 0.15)
-              border.width: 1
-              visible: !isNoteItem && itemStatus === "in_progress" && !isEditingThis
-              Layout.alignment: Qt.AlignVCenter
-
-              Text {
-                anchors.centerIn: parent
-                text: "✓"
-                color: completeMouse.containsMouse ? Color.green : Style.tint(root.foreground, 0.85)
-                font.family: root.fontFamily
-                font.bold: true
-                font.pixelSize: Style.font.small
-              }
-
-              MouseArea {
-                id: completeMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.moveTask(itemObj ? itemObj.id : "", "done")
-              }
-            }
-
-            // Edit Start Button (Hover when not editing)
-            Rectangle {
-              width: Style.space(24)
-              height: Style.space(24)
-              radius: Style.space(5)
-              visible: !isEditingThis && isHovered
-              color: editStartMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06)
-              border.color: editStartMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15)
-              border.width: 1
-              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
-              Layout.topMargin: isNoteItem ? Style.space(2) : 0
-
-              Text {
-                anchors.centerIn: parent
-                text: "󰏫"
-                color: Style.tint(root.foreground, 0.85)
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.micro
-              }
-
-              MouseArea {
-                id: editStartMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.editingId = itemObj ? itemObj.id : ""
-              }
-            }
-
-            // Save Edit Button (Visible only during edit)
-            Rectangle {
-              width: Style.space(24)
-              height: Style.space(24)
-              radius: Style.space(5)
-              visible: isEditingThis
-              color: editSaveMouse.containsMouse ? Style.tint(Color.green, 0.25) : Style.tint(Color.green, 0.12)
-              border.color: editSaveMouse.containsMouse ? Color.green : Style.tint(Color.green, 0.6)
-              border.width: 1
-              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
-              Layout.topMargin: isNoteItem ? Style.space(2) : 0
-
-              Text {
-                anchors.centerIn: parent
-                text: "✓"
-                color: Color.green
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.small
-                font.bold: true
-              }
-
-              MouseArea {
-                id: editSaveMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                  var newText = editField.text
-                  var id = itemObj ? itemObj.id : ""
-                  var isNote = isNoteItem
-                  root.editingId = ""
-                  if (newText.trim() !== "") {
-                    Qt.callLater(function() {
-                      if (isNote) root.updateNote(id, newText)
-                      else root.updateTask(id, newText)
-                    })
-                  }
-                }
-              }
-            }
-
-            // Cancel Edit Button (Visible only during edit - does NOT delete)
-            Rectangle {
-              width: Style.space(24)
-              height: Style.space(24)
-              radius: Style.space(5)
-              visible: isEditingThis
-              color: editCancelMouse.containsMouse ? Style.tint(root.foreground, 0.15) : Style.tint(root.foreground, 0.06)
-              border.color: editCancelMouse.containsMouse ? Style.tint(root.foreground, 0.35) : Style.tint(root.foreground, 0.15)
-              border.width: 1
-              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
-              Layout.topMargin: isNoteItem ? Style.space(2) : 0
-
-              Text {
-                anchors.centerIn: parent
-                text: "✕"
-                color: Style.tint(root.foreground, 0.8)
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.small
-              }
-
-              MouseArea {
-                id: editCancelMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                  editField.text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
-                  root.editingId = ""
-                }
-              }
-            }
-
-            // Copy Icon (Notes only)
-            Rectangle {
-              width: Style.space(24)
-              height: Style.space(24)
-              radius: Style.space(5)
-              visible: isNoteItem && !isEditingThis && (isHovered || isItemFeedback)
-              color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
-              border.color: isItemFeedback ? Color.green : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15))
-              border.width: 1
-              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
-              Layout.topMargin: isNoteItem ? Style.space(2) : 0
-
-              Text {
-                id: copyLabel
-                anchors.centerIn: parent
-                text: isItemFeedback ? "✓" : "󰆏"
-                color: isItemFeedback ? Color.green : Style.tint(root.foreground, 0.85)
-                font.family: root.fontFamily
-                font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
-                font.bold: isItemFeedback
-              }
-
-              MouseArea {
-                id: copyMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.copyToClipboard(itemObj ? (itemObj.text || itemObj.title) : "", itemObj ? itemObj.id : "")
-              }
-            }
-
-            // Delete Button (Hover when not editing)
-            Rectangle {
-              width: Style.space(24)
-              height: Style.space(24)
-              radius: Style.space(5)
-              visible: !isEditingThis && isHovered
-              color: deleteMouse.containsMouse ? Style.tint(Color.red, 0.15) : Style.tint(root.foreground, 0.06)
-              border.color: deleteMouse.containsMouse ? Color.red : Style.tint(root.foreground, 0.15)
-              border.width: 1
-              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
-              Layout.topMargin: isNoteItem ? Style.space(2) : 0
-
-              Text {
-                anchors.centerIn: parent
-                text: "✕"
-                color: deleteMouse.containsMouse ? Color.red : Style.tint(root.foreground, 0.85)
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.small
-                font.bold: true
-              }
-
-              MouseArea {
-                id: deleteMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                  if (isNoteItem) {
-                    root.deleteNote(itemObj ? itemObj.id : "")
-                  } else {
-                    root.deleteTask(itemObj ? itemObj.id : "")
-                  }
+                  Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
+                  Keys.onEscapePressed: root.close()
                 }
               }
             }
           }
-        }
 
-        // Empty State
-        Rectangle {
-          anchors.fill: parent
-          radius: Style.space(8)
-          color: Style.tint(root.foreground, 0.02)
-          border.color: Style.tint(root.foreground, 0.08)
-          border.width: 1
-          visible: root.currentItemsList.length === 0
 
+
+          // ---------- Empty State ----------
           Text {
-            anchors.centerIn: parent
-            text: root.activeTab === "notes" ? "No notes yet.\nType above to add one!" : "No tasks here.\nType above to add one!"
-            color: Style.tint(root.foreground, 0.4)
+            visible: root.currentItemsList.length === 0
+            width: parent.width
+            topPadding: Style.space(24)
+            bottomPadding: Style.space(24)
+            text: root.activeTab === "notes" ? "No notes yet.\nType above to add one." : "No tasks here.\nType above to add one."
+            color: Util.alpha(root.foreground, 0.75)
             font.family: root.fontFamily
             font.pixelSize: Style.font.body
             horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+          }
+
+          // ---------- Card List ----------
+          Repeater {
+            model: root.currentItemsList
+
+            Rectangle {
+              id: itemCard
+              required property var modelData
+              required property int index
+              width: column.width
+              implicitHeight: Math.max(Style.space(42), itemRow.implicitHeight + Style.space(12))
+              height: implicitHeight
+              radius: Style.cornerRadius
+
+              property var itemObj: { var _ = root.dataVersion; return modelData }
+              property string itemStatus: { var _ = root.dataVersion; return itemObj ? (itemObj.status || "") : "" }
+              property bool isNoteItem: root.activeTab === "notes"
+              property bool isEditingThis: root.editingId === (itemObj ? itemObj.id : "")
+              property bool isTaskRunning: { var _ = root.dataVersion; return !isNoteItem && itemObj && itemObj.timer && itemObj.timer.isRunning === true }
+              property int liveDuration: { var _ = root.dataVersion; return isNoteItem ? 0 : root.getLiveTime(itemObj, root.now) }
+              property bool isHovered: cardHover.hovered
+              property bool isItemFeedback: root.feedbackTaskId === (itemObj ? itemObj.id : "")
+
+              color: isTaskRunning
+                ? Util.alpha(Color.accent, 0.08)
+                : root.cardBackground
+              border.color: isTaskRunning ? Color.accent : (isEditingThis ? Color.accent : (isHovered ? Util.alpha(root.foreground, 0.25) : Util.alpha(root.foreground, 0.12)))
+              border.width: 1
+
+              HoverHandler {
+                id: cardHover
+              }
+
+              RowLayout {
+                id: itemRow
+                anchors.fill: parent
+                anchors.leftMargin: Style.space(8)
+                anchors.rightMargin: Style.space(8)
+                anchors.topMargin: Style.space(6)
+                anchors.bottomMargin: Style.space(6)
+                spacing: Style.space(8)
+
+                // Left Action Box: Play/Pause/Restart for tasks
+                Rectangle {
+                  width: Style.space(26)
+                  height: Style.space(26)
+                  radius: Style.space(6)
+                  Layout.alignment: Qt.AlignVCenter
+                  visible: !isNoteItem
+                  color: itemStatus === "done"
+                    ? Util.alpha(Color.accent, 0.12)
+                    : (isTaskRunning ? Color.accent : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.12) : Util.alpha(root.foreground, 0.05)))
+                  border.color: itemStatus === "done" ? Color.accent : (isTaskRunning ? Color.accent : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.3) : Util.alpha(root.foreground, 0.15)))
+                  border.width: 1
+
+                  Text {
+                    anchors.centerIn: parent
+                    anchors.horizontalCenterOffset: text === "▶" ? 1 : 0
+                    text: itemStatus === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶")
+                    color: itemStatus === "done" ? Color.accent : (isTaskRunning ? Color.popups.background : root.foreground)
+                    font.family: root.fontFamily
+                    font.bold: true
+                    font.pixelSize: Style.font.bodySmall
+                  }
+
+                  MouseArea {
+                    id: leftBtnMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      if (!isNoteItem) {
+                        if (itemStatus === "done") {
+                          root.moveTask(itemObj.id, "todo")
+                        } else {
+                          root.toggleTimer(itemObj)
+                        }
+                      }
+                    }
+                  }
+                }
+
+                // Center Content (Title for tasks / Markdown text for notes)
+                Text {
+                  visible: !isEditingThis
+                  Layout.fillWidth: true
+                  Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+                  wrapMode: Text.Wrap
+                  text: { var _ = root.dataVersion; return isNoteItem ? (itemObj.text || "") : (itemObj.title || "") }
+                  textFormat: isNoteItem ? Text.MarkdownText : Text.PlainText
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.bold: true
+                  font.pixelSize: Style.font.subtitle
+                }
+
+                QQC.TextArea {
+                  id: editField
+                  visible: isEditingThis
+                  Layout.fillWidth: true
+                  Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+                  wrapMode: Text.Wrap
+                  text: { var _ = root.dataVersion; return isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "") }
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.bold: true
+                  font.pixelSize: Style.font.subtitle
+                  background: Rectangle {
+                    color: "transparent"
+                    radius: Style.space(4)
+                    border.color: Color.accent
+                    border.width: 1.5
+                  }
+                  leftPadding: Style.space(6)
+                  rightPadding: Style.space(6)
+                  topPadding: Style.space(4)
+                  bottomPadding: Style.space(4)
+                  Keys.onReturnPressed: (event) => {
+                    if (event.modifiers & Qt.ShiftModifier) {
+                      event.accepted = false
+                    } else {
+                      event.accepted = true
+                      var newText = text
+                      var id = itemObj ? itemObj.id : ""
+                      var isNote = isNoteItem
+                      root.editingId = ""
+                      if (newText.trim() !== "") {
+                        if (isNote) root.updateNote(id, newText)
+                        else root.updateTask(id, newText)
+                      } else {
+                        text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
+                      }
+                    }
+                  }
+                  Keys.onEnterPressed: (event) => Keys.onReturnPressed(event)
+                  Keys.onEscapePressed: {
+                    text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
+                    root.editingId = ""
+                  }
+                  onVisibleChanged: {
+                    if (visible) {
+                      text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
+                      forceActiveFocus()
+                      cursorPosition = text.length
+                    }
+                  }
+                }
+
+                // Time Badge (Tasks only)
+                Rectangle {
+                  visible: !isNoteItem && !isEditingThis
+                  height: (itemStatus === "in_progress") ? Style.space(22) : Style.space(20)
+                  radius: Style.space(4)
+                  color: isTaskRunning ? Util.alpha(Color.accent, 0.10) : "transparent"
+                  border.color: (isTaskRunning || itemStatus === "in_progress") ? Util.alpha(Color.accent, 0.45) : Util.alpha(root.foreground, 0.15)
+                  border.width: 1
+                  Layout.preferredWidth: timeText.implicitWidth + ((itemStatus === "in_progress") ? Style.space(12) : Style.space(10))
+                  Layout.alignment: Qt.AlignVCenter
+
+                  Text {
+                    id: timeText
+                    anchors.centerIn: parent
+                    text: itemStatus === "in_progress"
+                      ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
+                      : (itemStatus === "done"
+                        ? root.formatDoneBadge(itemObj, root.now)
+                        : root.formatCreationTime(itemObj ? itemObj.createdAt : null, root.now))
+                    color: (isTaskRunning || itemStatus === "in_progress") ? Color.accent : Util.alpha(root.foreground, 0.70)
+                    font.family: root.fontFamily
+                    font.pixelSize: (itemStatus === "in_progress") ? Style.font.body : Style.font.bodySmall
+                    font.bold: (itemStatus === "in_progress")
+                  }
+                }
+
+                // In-Progress Quick Checkmark
+                Rectangle {
+                  width: Style.space(24)
+                  height: Style.space(24)
+                  radius: Style.space(5)
+                  color: completeMouse.containsMouse ? Style.hoverFillFor(Color.accent, Color.accent) : "transparent"
+                  border.color: completeMouse.containsMouse ? Color.accent : Util.alpha(Color.accent, 0.4)
+                  border.width: 1
+                  visible: !isNoteItem && itemStatus === "in_progress" && !isEditingThis
+                  Layout.alignment: Qt.AlignVCenter
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: "✓"
+                    color: Color.accent
+                    font.family: root.fontFamily
+                    font.bold: true
+                    font.pixelSize: Style.font.small
+                  }
+
+                  MouseArea {
+                    id: completeMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.moveTask(itemObj ? itemObj.id : "", "done")
+                  }
+                }
+
+                // Edit Start Button (󰏫)
+                Rectangle {
+                  width: Style.space(24)
+                  height: Style.space(24)
+                  radius: Style.space(5)
+                  visible: !isEditingThis && isHovered
+                  color: editStartMouse.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent"
+                  border.color: editStartMouse.containsMouse ? Util.alpha(root.foreground, 0.25) : "transparent"
+                  border.width: 1
+                  Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+                  Layout.topMargin: isNoteItem ? Style.space(2) : 0
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: "󰏫"
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.micro
+                  }
+
+                  MouseArea {
+                    id: editStartMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.editingId = itemObj ? itemObj.id : ""
+                  }
+                }
+
+                // Edit Confirm Checkmark Button
+                Rectangle {
+                  width: Style.space(24)
+                  height: Style.space(24)
+                  radius: Style.space(5)
+                  visible: isEditingThis
+                  color: editSaveMouse.containsMouse ? Style.hoverFillFor(Color.accent, Color.accent) : "transparent"
+                  border.color: editSaveMouse.containsMouse ? Color.accent : Util.alpha(Color.accent, 0.4)
+                  border.width: 1
+                  Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+                  Layout.topMargin: isNoteItem ? Style.space(2) : 0
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: "✓"
+                    color: Color.accent
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.small
+                    font.bold: true
+                  }
+
+                  MouseArea {
+                    id: editSaveMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      var newText = editField.text
+                      var id = itemObj ? itemObj.id : ""
+                      var isNote = isNoteItem
+                      root.editingId = ""
+                      if (newText.trim() !== "") {
+                        if (isNote) root.updateNote(id, newText)
+                        else root.updateTask(id, newText)
+                      } else {
+                        editField.text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
+                      }
+                    }
+                  }
+                }
+
+                // Edit Cancel Cross Button
+                Rectangle {
+                  width: Style.space(24)
+                  height: Style.space(24)
+                  radius: Style.space(5)
+                  visible: isEditingThis
+                  color: editCancelMouse.containsMouse ? Style.hoverFillFor(Color.urgent, Color.urgent) : "transparent"
+                  border.color: editCancelMouse.containsMouse ? Color.urgent : Util.alpha(Color.urgent, 0.4)
+                  border.width: 1
+                  Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+                  Layout.topMargin: isNoteItem ? Style.space(2) : 0
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: "✕"
+                    color: Color.urgent
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.small
+                  }
+
+                  MouseArea {
+                    id: editCancelMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      editField.text = isNoteItem ? (itemObj ? (itemObj.text || "") : "") : (itemObj ? (itemObj.title || "") : "")
+                      root.editingId = ""
+                    }
+                  }
+                }
+
+                // Copy Icon (Notes ONLY)
+                Rectangle {
+                  width: Style.space(24)
+                  height: Style.space(24)
+                  radius: Style.space(5)
+                  visible: isNoteItem && !isEditingThis && (cardHover.hovered || isItemFeedback)
+                  color: isItemFeedback ? Color.accent : (copyMouse.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent")
+                  border.color: isItemFeedback ? Color.accent : (copyMouse.containsMouse ? Util.alpha(root.foreground, 0.25) : "transparent")
+                  border.width: 1
+                  Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+                  Layout.topMargin: isNoteItem ? Style.space(2) : 0
+
+                  Text {
+                    id: copyLabel
+                    anchors.centerIn: parent
+                    text: isItemFeedback ? "✓" : "󰆏"
+                    color: isItemFeedback ? Color.popups.background : root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
+                    font.bold: isItemFeedback
+                  }
+
+                  MouseArea {
+                    id: copyMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.copyToClipboard(itemObj ? (itemObj.text || itemObj.title) : "", itemObj ? itemObj.id : "")
+                  }
+                }
+
+
+
+                // Delete Button
+                Rectangle {
+                  width: Style.space(24)
+                  height: Style.space(24)
+                  radius: Style.space(5)
+                  visible: !isEditingThis && isHovered
+                  color: deleteMouse.containsMouse ? Style.hoverFillFor(Color.urgent, Color.urgent) : "transparent"
+                  border.color: deleteMouse.containsMouse ? Color.urgent : "transparent"
+                  border.width: 1
+                  Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+                  Layout.topMargin: isNoteItem ? Style.space(2) : 0
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: "✕"
+                    color: deleteMouse.containsMouse ? Color.urgent : root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.small
+                    font.bold: true
+                  }
+
+                  MouseArea {
+                    id: deleteMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      if (isNoteItem) {
+                        root.deleteNote(itemObj ? itemObj.id : "")
+                      } else {
+                        root.deleteTask(itemObj ? itemObj.id : "")
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
