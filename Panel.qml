@@ -34,6 +34,7 @@ Item {
     return null
   }
   readonly property bool hasRunningTask: runningTask !== null
+  readonly property string activeTimerText: runningTask ? (runningTask.title || "") : ""
 
   readonly property color foreground: Color.popups.text
   readonly property color bg: Color.popups.background
@@ -635,6 +636,7 @@ Item {
           property var itemObj: { var _ = root.dataVersion; return root.currentItemsList[index] || modelData }
           property string itemStatus: { var _ = root.dataVersion; return itemObj ? (itemObj.status || "") : "" }
           property bool isNoteItem: root.activeTab === "notes"
+          property bool isEditingThis: root.editingId === (itemObj ? itemObj.id : "")
           property bool isTaskRunning: { var _ = root.dataVersion; return !isNoteItem && itemObj && itemObj.timer && itemObj.timer.isRunning === true }
           property int liveDuration: { var _ = root.dataVersion; return isNoteItem ? 0 : root.getLiveTime(itemObj, root.now) }
           property bool isHovered: cardHover.hovered
@@ -696,7 +698,7 @@ Item {
 
             // Center Content (Title for tasks / Markdown text for notes)
             Text {
-              visible: root.editingId !== itemObj.id
+              visible: !isEditingThis
               Layout.fillWidth: true
               Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
               wrapMode: Text.Wrap
@@ -711,7 +713,7 @@ Item {
 
             QQC.TextArea {
               id: editField
-              visible: root.editingId === itemObj.id
+              visible: isEditingThis
               Layout.fillWidth: true
               Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
               wrapMode: Text.Wrap
@@ -753,7 +755,7 @@ Item {
 
             // Time Badge (Tasks only) - Placed before the action buttons
             Rectangle {
-              visible: !isNoteItem
+              visible: !isNoteItem && !isEditingThis
               height: Style.space(20)
               radius: Style.space(4)
               color: isTaskRunning ? Style.tint(Color.green, 0.18) : (itemStatus === "in_progress" ? Style.tint(Color.yellow, 0.15) : Style.tint(root.foreground, 0.05))
@@ -777,7 +779,7 @@ Item {
               }
             }
 
-            // In-Progress Quick Checkmark to complete task (Always visible in progress tab)
+            // In-Progress Quick Checkmark to complete task (Hidden while editing to avoid duplicate OK buttons)
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
@@ -785,7 +787,7 @@ Item {
               color: completeMouse.containsMouse ? Style.tint(Color.green, 0.15) : Style.tint(root.foreground, 0.06)
               border.color: completeMouse.containsMouse ? Color.green : Style.tint(root.foreground, 0.15)
               border.width: 1
-              visible: !isNoteItem && itemStatus === "in_progress"
+              visible: !isNoteItem && itemStatus === "in_progress" && !isEditingThis
               Layout.alignment: Qt.AlignVCenter
 
               Text {
@@ -806,57 +808,111 @@ Item {
               }
             }
 
-            // Edit / Save Icon
+            // Edit Start Button (Hover when not editing)
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isHovered || root.editingId === (itemObj ? itemObj.id : "")
-              color: editMouse.containsMouse ? (root.editingId === (itemObj ? itemObj.id : "") ? Style.tint(Color.green, 0.2) : Style.tint(root.foreground, 0.12)) : (root.editingId === (itemObj ? itemObj.id : "") ? Style.tint(Color.green, 0.1) : Style.tint(root.foreground, 0.06))
-              border.color: editMouse.containsMouse ? (root.editingId === (itemObj ? itemObj.id : "") ? Color.green : Style.tint(root.foreground, 0.3)) : (root.editingId === (itemObj ? itemObj.id : "") ? Style.tint(Color.green, 0.6) : Style.tint(root.foreground, 0.15))
+              visible: !isEditingThis && isHovered
+              color: editStartMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06)
+              border.color: editStartMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15)
               border.width: 1
               Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
               Layout.topMargin: isNoteItem ? Style.space(2) : 0
 
               Text {
                 anchors.centerIn: parent
-                text: root.editingId === (itemObj ? itemObj.id : "") ? "✓" : "󰏫"
-                color: root.editingId === (itemObj ? itemObj.id : "") ? Color.green : Style.tint(root.foreground, 0.85)
+                text: "󰏫"
+                color: Style.tint(root.foreground, 0.85)
                 font.family: root.fontFamily
-                font.pixelSize: root.editingId === (itemObj ? itemObj.id : "") ? Style.font.small : Style.font.micro
-                font.bold: root.editingId === (itemObj ? itemObj.id : "")
+                font.pixelSize: Style.font.micro
               }
 
               MouseArea {
-                id: editMouse
+                id: editStartMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.editingId = itemObj ? itemObj.id : ""
+              }
+            }
+
+            // Save Edit Button (Visible only during edit)
+            Rectangle {
+              width: Style.space(24)
+              height: Style.space(24)
+              radius: Style.space(5)
+              visible: isEditingThis
+              color: editSaveMouse.containsMouse ? Style.tint(Color.green, 0.25) : Style.tint(Color.green, 0.12)
+              border.color: editSaveMouse.containsMouse ? Color.green : Style.tint(Color.green, 0.6)
+              border.width: 1
+              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+              Layout.topMargin: isNoteItem ? Style.space(2) : 0
+
+              Text {
+                anchors.centerIn: parent
+                text: "✓"
+                color: Color.green
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.small
+                font.bold: true
+              }
+
+              MouseArea {
+                id: editSaveMouse
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                  if (root.editingId === (itemObj ? itemObj.id : "")) {
-                    var newText = editField.text
-                    var id = itemObj ? itemObj.id : ""
-                    var isNote = isNoteItem
-                    root.editingId = ""
-                    if (newText.trim() !== "") {
-                      Qt.callLater(function() {
-                        if (isNote) root.updateNote(id, newText)
-                        else root.updateTask(id, newText)
-                      })
-                    }
-                  } else {
-                    root.editingId = itemObj ? itemObj.id : ""
+                  var newText = editField.text
+                  var id = itemObj ? itemObj.id : ""
+                  var isNote = isNoteItem
+                  root.editingId = ""
+                  if (newText.trim() !== "") {
+                    Qt.callLater(function() {
+                      if (isNote) root.updateNote(id, newText)
+                      else root.updateTask(id, newText)
+                    })
                   }
                 }
               }
             }
 
-            // Copy Icon
+            // Cancel Edit Button (Visible only during edit - does NOT delete)
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isNoteItem && (isHovered || isItemFeedback)
+              visible: isEditingThis
+              color: editCancelMouse.containsMouse ? Style.tint(root.foreground, 0.15) : Style.tint(root.foreground, 0.06)
+              border.color: editCancelMouse.containsMouse ? Style.tint(root.foreground, 0.35) : Style.tint(root.foreground, 0.15)
+              border.width: 1
+              Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
+              Layout.topMargin: isNoteItem ? Style.space(2) : 0
+
+              Text {
+                anchors.centerIn: parent
+                text: "✕"
+                color: Style.tint(root.foreground, 0.8)
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.small
+              }
+
+              MouseArea {
+                id: editCancelMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.editingId = ""
+              }
+            }
+
+            // Copy Icon (Notes only)
+            Rectangle {
+              width: Style.space(24)
+              height: Style.space(24)
+              radius: Style.space(5)
+              visible: isNoteItem && !isEditingThis && (isHovered || isItemFeedback)
               color: isItemFeedback ? Style.tint(Color.green, 0.18) : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.12) : Style.tint(root.foreground, 0.06))
               border.color: isItemFeedback ? Color.green : (copyMouse.containsMouse ? Style.tint(root.foreground, 0.3) : Style.tint(root.foreground, 0.15))
               border.width: 1
@@ -882,12 +938,12 @@ Item {
               }
             }
 
-            // Delete Button (Hover)
+            // Delete Button (Hover when not editing)
             Rectangle {
               width: Style.space(24)
               height: Style.space(24)
               radius: Style.space(5)
-              visible: isHovered
+              visible: !isEditingThis && isHovered
               color: deleteMouse.containsMouse ? Style.tint(Color.red, 0.15) : Style.tint(root.foreground, 0.06)
               border.color: deleteMouse.containsMouse ? Color.red : Style.tint(root.foreground, 0.15)
               border.width: 1
