@@ -23,9 +23,14 @@ if [ "$cmd" = "write" ]; then
     notes_json="$4"
     tasks_json="$5"
     
-    mkdir -p "$(dirname "$jsonP")"
+    umask 0077
+    
+    dirP="$(dirname "$jsonP")"
+    mkdir -p "$dirP"
+    chmod 0700 "$dirP"
     
     jq -n -c --argjson n "$notes_json" --argjson t "$tasks_json" '{version: 1, notes: $n, tasks: $t}' > "$jsonP"
+    chmod 0600 "$jsonP"
     
     jq -r -n --argjson n "$notes_json" --argjson t "$tasks_json" '
     def fmt_human(sec):
@@ -68,6 +73,7 @@ if [ "$cmd" = "write" ]; then
           else ($dones | map("- [x] " + .title + " (completed in " + fmt_human(.timeSpentSeconds // 0) + ") <!-- id:" + .id + " -->\n") | join("")) end
     )
     ' > "$mdP"
+    chmod 0600 "$mdP"
     
     exit 0
 fi
