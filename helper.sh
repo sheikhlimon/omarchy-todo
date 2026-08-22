@@ -23,6 +23,7 @@ if [ "$cmd" = "write" ]; then
     notes_json="$4"
     tasks_json="$5"
     
+    umask 0077
     mkdir -p "$(dirname "$jsonP")"
     
     jq -n -c --argjson n "$notes_json" --argjson t "$tasks_json" '{version: 1, notes: $n, tasks: $t}' > "$jsonP"
