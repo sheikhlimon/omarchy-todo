@@ -577,16 +577,16 @@ Item {
                   Layout.alignment: Qt.AlignVCenter
                   visible: !isNoteItem
                   color: itemStatus === "done"
-                    ? Util.alpha(Color.accent, 0.12)
-                    : (isTaskRunning ? Color.accent : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.12) : Util.alpha(root.foreground, 0.05)))
-                  border.color: itemStatus === "done" ? Color.accent : (isTaskRunning ? Color.accent : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.3) : Util.alpha(root.foreground, 0.15)))
+                    ? (leftBtnMouse.containsMouse ? Util.alpha(Color.accent, 0.12) : "transparent")
+                    : (isTaskRunning ? (leftBtnMouse.containsMouse ? Util.alpha(Color.accent, 0.2) : Util.alpha(Color.accent, 0.10)) : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.12) : "transparent"))
+                  border.color: itemStatus === "done" ? (leftBtnMouse.containsMouse ? Color.accent : Util.alpha(root.foreground, 0.15)) : (isTaskRunning ? (leftBtnMouse.containsMouse ? Color.accent : Util.alpha(Color.accent, 0.45)) : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.3) : Util.alpha(root.foreground, 0.15)))
                   border.width: 1
 
                   Text {
                     anchors.centerIn: parent
                     anchors.horizontalCenterOffset: text === "󰐊" ? 1 : 0
                     text: itemStatus === "done" ? "↺" : (isTaskRunning ? "󰏤" : "󰐊")
-                    color: itemStatus === "done" ? Color.accent : (isTaskRunning ? Color.popups.background : root.foreground)
+                    color: itemStatus === "done" ? (leftBtnMouse.containsMouse ? Color.accent : root.foreground) : (isTaskRunning ? Color.accent : root.foreground)
                     font.family: root.fontFamily
                     font.bold: true
                     font.pixelSize: Style.font.bodySmall
@@ -680,8 +680,8 @@ Item {
                   visible: !isNoteItem && !isEditingThis
                   height: (itemStatus === "in_progress") ? Style.space(22) : Style.space(20)
                   radius: Style.space(4)
-                  color: isTaskRunning ? Util.alpha(Color.accent, 0.15) : "transparent"
-                  border.color: isTaskRunning ? Color.accent : Util.alpha(root.foreground, 0.15)
+                  color: isTaskRunning ? Util.alpha(Color.accent, 0.10) : "transparent"
+                  border.color: isTaskRunning ? Util.alpha(Color.accent, 0.45) : Util.alpha(root.foreground, 0.15)
                   border.width: 1
                   Layout.preferredWidth: timeText.implicitWidth + ((itemStatus === "in_progress") ? Style.space(12) : Style.space(10))
                   Layout.alignment: Qt.AlignVCenter
@@ -694,7 +694,7 @@ Item {
                       : (itemStatus === "done"
                         ? root.formatDoneBadge(itemObj, root.now)
                         : root.formatCreationTime(itemObj ? itemObj.createdAt : null, root.now))
-                    color: isTaskRunning ? Color.accent : Util.alpha(root.foreground, 0.70)
+                    color: isTaskRunning ? Color.accent : (itemStatus === "done" ? root.foreground : Util.alpha(root.foreground, 0.70))
                     font.family: root.fontFamily
                     font.pixelSize: (itemStatus === "in_progress") ? Style.font.body : Style.font.bodySmall
                     font.bold: (itemStatus === "in_progress")
@@ -706,8 +706,8 @@ Item {
                   width: Style.space(24)
                   height: Style.space(24)
                   radius: Style.space(5)
-                  color: completeMouse.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent"
-                  border.color: completeMouse.containsMouse ? Color.accent : Util.alpha(root.foreground, 0.25)
+                  color: completeMouse.containsMouse ? Style.hoverFillFor(isTaskRunning ? Color.accent : root.foreground, Color.accent) : "transparent"
+                  border.color: completeMouse.containsMouse ? Color.accent : (isTaskRunning ? Util.alpha(Color.accent, 0.45) : Util.alpha(root.foreground, 0.25))
                   border.width: 1
                   visible: !isNoteItem && itemStatus === "in_progress" && !isEditingThis
                   Layout.alignment: Qt.AlignVCenter
@@ -715,7 +715,7 @@ Item {
                   Text {
                     anchors.centerIn: parent
                     text: "✓"
-                    color: completeMouse.containsMouse ? Color.accent : Util.alpha(root.foreground, 0.70)
+                    color: (isTaskRunning || completeMouse.containsMouse) ? Color.accent : Util.alpha(root.foreground, 0.70)
                     font.family: root.fontFamily
                     font.bold: true
                     font.pixelSize: Style.font.small
