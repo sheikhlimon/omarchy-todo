@@ -8,7 +8,7 @@ A native [Omarchy](https://omarchy.org/) bar plugin for task management, live st
 
 - **3-Stage Workflow**: `to-do`, `progress` (live stopwatch), and `done` (total time spent).
 - **Markdown Notes**: Fast scratchpad with interactive checkboxes and one-click copy.
-- **Smart Hover**: Contextual actions (`▶`, `⏸`, `✓`, `↺`, `Copy`, `✕`) reveal on hover.
+- **Smart Hover**: Contextual actions (Play, Pause, Complete, Reset, Copy, Delete) reveal on hover.
 - **Theme Adaptive**: Automatically matches your active Omarchy color scheme and typography.
 - **Zero Overhead**: Native in-process Quickshell layer with persistent storage in `~/.local/share/to-do/`.
 

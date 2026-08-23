@@ -183,6 +183,10 @@ Item {
       }
       task.status = newStatus
       task.completedAt = newStatus === "done" ? new Date().toISOString() : null
+      if (newStatus === "todo") {
+        task.timeSpentSeconds = 0
+        task.timer = null
+      }
       root.allTasks = list
       saveTasks()
     }
@@ -295,32 +299,7 @@ Item {
   function formatDoneBadge(task, nowMs) {
     if (!task) return "✓ Done"
     var spent = root.formatSpentHuman(task.timeSpentSeconds)
-    var doneDateStr = task.completedAt || task.createdAt
-    if (!doneDateStr) return "✓ " + spent
-
-    var date = new Date(doneDateStr)
-    var now = new Date(nowMs || Date.now())
-
-    var isToday = date.getDate() === now.getDate() &&
-                  date.getMonth() === now.getMonth() &&
-                  date.getFullYear() === now.getFullYear()
-
-    if (isToday) {
-      return "✓ " + spent
-    }
-
-    var yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-    var isYesterday = date.getDate() === yesterday.getDate() &&
-                      date.getMonth() === yesterday.getMonth() &&
-                      date.getFullYear() === yesterday.getFullYear()
-
-    if (isYesterday) {
-      return "✓ " + spent + " · yesterday"
-    }
-
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    return "✓ " + spent + " · " + date.getDate() + " " + months[date.getMonth()]
+    return "✓ " + spent
   }
 
   function formatSeconds(totalSec) {
@@ -605,8 +584,8 @@ Item {
 
                   Text {
                     anchors.centerIn: parent
-                    anchors.horizontalCenterOffset: text === "▶" ? 1 : 0
-                    text: itemStatus === "done" ? "↺" : (isTaskRunning ? "⏸" : "▶")
+                    anchors.horizontalCenterOffset: text === "󰐊" ? 1 : 0
+                    text: itemStatus === "done" ? "↺" : (isTaskRunning ? "󰏤" : "󰐊")
                     color: itemStatus === "done" ? Color.accent : (isTaskRunning ? Color.popups.background : root.foreground)
                     font.family: root.fontFamily
                     font.bold: true
@@ -701,8 +680,8 @@ Item {
                   visible: !isNoteItem && !isEditingThis
                   height: (itemStatus === "in_progress") ? Style.space(22) : Style.space(20)
                   radius: Style.space(4)
-                  color: isTaskRunning ? Util.alpha(Color.accent, 0.10) : "transparent"
-                  border.color: (isTaskRunning || itemStatus === "in_progress") ? Util.alpha(Color.accent, 0.45) : Util.alpha(root.foreground, 0.15)
+                  color: isTaskRunning ? Util.alpha(Color.accent, 0.15) : "transparent"
+                  border.color: isTaskRunning ? Color.accent : Util.alpha(root.foreground, 0.15)
                   border.width: 1
                   Layout.preferredWidth: timeText.implicitWidth + ((itemStatus === "in_progress") ? Style.space(12) : Style.space(10))
                   Layout.alignment: Qt.AlignVCenter
@@ -711,11 +690,11 @@ Item {
                     id: timeText
                     anchors.centerIn: parent
                     text: itemStatus === "in_progress"
-                      ? (isTaskRunning ? "⏱ " : "⏸ ") + root.formatSeconds(liveDuration)
+                      ? (isTaskRunning ? "󰔟 " : "󰏤 ") + root.formatSeconds(liveDuration)
                       : (itemStatus === "done"
                         ? root.formatDoneBadge(itemObj, root.now)
                         : root.formatCreationTime(itemObj ? itemObj.createdAt : null, root.now))
-                    color: (isTaskRunning || itemStatus === "in_progress") ? Color.accent : Util.alpha(root.foreground, 0.70)
+                    color: isTaskRunning ? Color.accent : Util.alpha(root.foreground, 0.70)
                     font.family: root.fontFamily
                     font.pixelSize: (itemStatus === "in_progress") ? Style.font.body : Style.font.bodySmall
                     font.bold: (itemStatus === "in_progress")
@@ -727,8 +706,8 @@ Item {
                   width: Style.space(24)
                   height: Style.space(24)
                   radius: Style.space(5)
-                  color: completeMouse.containsMouse ? Style.hoverFillFor(Color.accent, Color.accent) : "transparent"
-                  border.color: completeMouse.containsMouse ? Color.accent : Util.alpha(Color.accent, 0.4)
+                  color: completeMouse.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent"
+                  border.color: completeMouse.containsMouse ? Color.accent : Util.alpha(root.foreground, 0.25)
                   border.width: 1
                   visible: !isNoteItem && itemStatus === "in_progress" && !isEditingThis
                   Layout.alignment: Qt.AlignVCenter
@@ -736,7 +715,7 @@ Item {
                   Text {
                     anchors.centerIn: parent
                     text: "✓"
-                    color: Color.accent
+                    color: completeMouse.containsMouse ? Color.accent : Util.alpha(root.foreground, 0.70)
                     font.family: root.fontFamily
                     font.bold: true
                     font.pixelSize: Style.font.small
