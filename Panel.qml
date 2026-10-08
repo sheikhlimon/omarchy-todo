@@ -36,12 +36,12 @@ Item {
   readonly property bool hasRunningTask: runningTask !== null
   readonly property string activeTimerText: runningTask ? (runningTask.title || "") : ""
 
-  readonly property color foreground: bar ? bar.foreground : Color.foreground
-  readonly property color dim: Color.muted
-  readonly property color bg: Color.popups.background
-  readonly property color borderCol: Color.popups.border
-  readonly property color selectedBackground: Color.menu.selectedBackground
-  readonly property color selectedText: Color.menu.selectedText
+  readonly property color foreground: bar ? bar.foreground : ShellColor.foreground
+  readonly property color dim: ShellColor.muted
+  readonly property color bg: ShellColor.popups.background
+  readonly property color borderCol: ShellColor.popups.border
+  readonly property color selectedBackground: ShellColor.menu.selectedBackground
+  readonly property color selectedText: ShellColor.menu.selectedText
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
   readonly property bool isLightMode: (bg.r * 0.299 + bg.g * 0.587 + bg.b * 0.114) > 0.5
   readonly property color cardBackground: isLightMode ? "#FFFFFF" : Util.alpha(foreground, 0.05)
@@ -451,7 +451,7 @@ Item {
             implicitHeight: Math.min(Style.space(120), Math.max(Style.space(38), itemInput.contentHeight + Style.space(16)))
             radius: Style.cornerRadius
             color: "transparent"
-            border.color: itemInput.activeFocus ? Color.accent : Util.alpha(root.foreground, 0.15)
+            border.color: itemInput.activeFocus ? ShellColor.accent : Util.alpha(root.foreground, 0.15)
             border.width: itemInput.activeFocus ? 1.5 : 1
 
             RowLayout {
@@ -463,7 +463,7 @@ Item {
               Text {
                 Layout.alignment: Qt.AlignVCenter
                 text: "+"
-                color: itemInput.activeFocus ? Color.accent : Util.alpha(root.foreground, 0.5)
+                color: itemInput.activeFocus ? ShellColor.accent : Util.alpha(root.foreground, 0.5)
                 font.family: root.fontFamily
                 font.bold: true
                 font.pixelSize: Style.font.subtitle
@@ -551,9 +551,9 @@ Item {
               property bool isItemFeedback: root.feedbackTaskId === (itemObj ? itemObj.id : "")
 
               color: isTaskRunning
-                ? Util.alpha(Color.accent, 0.08)
+                ? Util.alpha(ShellColor.accent, 0.08)
                 : root.cardBackground
-              border.color: isTaskRunning ? Color.accent : (isEditingThis ? Color.accent : (isHovered ? Util.alpha(root.foreground, 0.25) : Util.alpha(root.foreground, 0.12)))
+              border.color: isTaskRunning ? ShellColor.accent : (isEditingThis ? ShellColor.accent : (isHovered ? Util.alpha(root.foreground, 0.25) : Util.alpha(root.foreground, 0.12)))
               border.width: 1
 
               HoverHandler {
@@ -577,16 +577,16 @@ Item {
                   Layout.alignment: Qt.AlignVCenter
                   visible: !isNoteItem
                   color: itemStatus === "done"
-                    ? (leftBtnMouse.containsMouse ? Util.alpha(Color.accent, 0.12) : "transparent")
-                    : (isTaskRunning ? (leftBtnMouse.containsMouse ? Util.alpha(Color.accent, 0.2) : Util.alpha(Color.accent, 0.10)) : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.12) : "transparent"))
-                  border.color: itemStatus === "done" ? (leftBtnMouse.containsMouse ? Color.accent : Util.alpha(root.foreground, 0.15)) : (isTaskRunning ? (leftBtnMouse.containsMouse ? Color.accent : Util.alpha(Color.accent, 0.45)) : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.3) : Util.alpha(root.foreground, 0.15)))
+                    ? (leftBtnMouse.containsMouse ? Util.alpha(ShellColor.accent, 0.12) : "transparent")
+                    : (isTaskRunning ? (leftBtnMouse.containsMouse ? Util.alpha(ShellColor.accent, 0.2) : Util.alpha(ShellColor.accent, 0.10)) : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.12) : "transparent"))
+                  border.color: itemStatus === "done" ? (leftBtnMouse.containsMouse ? ShellColor.accent : Util.alpha(root.foreground, 0.15)) : (isTaskRunning ? (leftBtnMouse.containsMouse ? ShellColor.accent : Util.alpha(ShellColor.accent, 0.45)) : (leftBtnMouse.containsMouse ? Util.alpha(root.foreground, 0.3) : Util.alpha(root.foreground, 0.15)))
                   border.width: 1
 
                   Text {
                     anchors.centerIn: parent
                     anchors.horizontalCenterOffset: text === "󰐊" ? 1 : 0
                     text: itemStatus === "done" ? "↺" : (isTaskRunning ? "󰏤" : "󰐊")
-                    color: itemStatus === "done" ? (leftBtnMouse.containsMouse ? Color.accent : root.foreground) : (isTaskRunning ? Color.accent : root.foreground)
+                    color: itemStatus === "done" ? (leftBtnMouse.containsMouse ? ShellColor.accent : root.foreground) : (isTaskRunning ? ShellColor.accent : root.foreground)
                     font.family: root.fontFamily
                     font.bold: true
                     font.pixelSize: Style.font.bodySmall
@@ -637,7 +637,7 @@ Item {
                   background: Rectangle {
                     color: "transparent"
                     radius: Style.space(4)
-                    border.color: Color.accent
+                    border.color: ShellColor.accent
                     border.width: 1.5
                   }
                   leftPadding: Style.space(6)
@@ -680,8 +680,8 @@ Item {
                   visible: !isNoteItem && !isEditingThis
                   height: (itemStatus === "in_progress") ? Style.space(22) : Style.space(20)
                   radius: Style.space(4)
-                  color: isTaskRunning ? Util.alpha(Color.accent, 0.10) : "transparent"
-                  border.color: isTaskRunning ? Util.alpha(Color.accent, 0.45) : Util.alpha(root.foreground, 0.15)
+                  color: isTaskRunning ? Util.alpha(ShellColor.accent, 0.10) : "transparent"
+                  border.color: isTaskRunning ? Util.alpha(ShellColor.accent, 0.45) : Util.alpha(root.foreground, 0.15)
                   border.width: 1
                   Layout.preferredWidth: timeText.implicitWidth + ((itemStatus === "in_progress") ? Style.space(12) : Style.space(10))
                   Layout.alignment: Qt.AlignVCenter
@@ -694,7 +694,7 @@ Item {
                       : (itemStatus === "done"
                         ? root.formatDoneBadge(itemObj, root.now)
                         : root.formatCreationTime(itemObj ? itemObj.createdAt : null, root.now))
-                    color: isTaskRunning ? Color.accent : (itemStatus === "done" ? root.foreground : Util.alpha(root.foreground, 0.70))
+                    color: isTaskRunning ? ShellColor.accent : (itemStatus === "done" ? root.foreground : Util.alpha(root.foreground, 0.70))
                     font.family: root.fontFamily
                     font.pixelSize: (itemStatus === "in_progress") ? Style.font.body : Style.font.bodySmall
                     font.bold: (itemStatus === "in_progress")
@@ -706,8 +706,8 @@ Item {
                   width: Style.space(24)
                   height: Style.space(24)
                   radius: Style.space(5)
-                  color: completeMouse.containsMouse ? Style.hoverFillFor(isTaskRunning ? Color.accent : root.foreground, Color.accent) : "transparent"
-                  border.color: completeMouse.containsMouse ? Color.accent : (isTaskRunning ? Util.alpha(Color.accent, 0.45) : Util.alpha(root.foreground, 0.25))
+                  color: completeMouse.containsMouse ? Style.hoverFillFor(isTaskRunning ? ShellColor.accent : root.foreground, ShellColor.accent) : "transparent"
+                  border.color: completeMouse.containsMouse ? ShellColor.accent : (isTaskRunning ? Util.alpha(ShellColor.accent, 0.45) : Util.alpha(root.foreground, 0.25))
                   border.width: 1
                   visible: !isNoteItem && itemStatus === "in_progress" && !isEditingThis
                   Layout.alignment: Qt.AlignVCenter
@@ -715,7 +715,7 @@ Item {
                   Text {
                     anchors.centerIn: parent
                     text: "✓"
-                    color: (isTaskRunning || completeMouse.containsMouse) ? Color.accent : Util.alpha(root.foreground, 0.70)
+                    color: (isTaskRunning || completeMouse.containsMouse) ? ShellColor.accent : Util.alpha(root.foreground, 0.70)
                     font.family: root.fontFamily
                     font.bold: true
                     font.pixelSize: Style.font.small
@@ -736,7 +736,7 @@ Item {
                   height: Style.space(24)
                   radius: Style.space(5)
                   visible: !isEditingThis && isHovered
-                  color: editStartMouse.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent"
+                  color: editStartMouse.containsMouse ? Style.hoverFillFor(root.foreground, ShellColor.accent) : "transparent"
                   border.color: editStartMouse.containsMouse ? Util.alpha(root.foreground, 0.25) : "transparent"
                   border.width: 1
                   Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
@@ -765,8 +765,8 @@ Item {
                   height: Style.space(24)
                   radius: Style.space(5)
                   visible: isEditingThis
-                  color: editSaveMouse.containsMouse ? Style.hoverFillFor(Color.accent, Color.accent) : "transparent"
-                  border.color: editSaveMouse.containsMouse ? Color.accent : Util.alpha(Color.accent, 0.4)
+                  color: editSaveMouse.containsMouse ? Style.hoverFillFor(ShellColor.accent, ShellColor.accent) : "transparent"
+                  border.color: editSaveMouse.containsMouse ? ShellColor.accent : Util.alpha(ShellColor.accent, 0.4)
                   border.width: 1
                   Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
                   Layout.topMargin: isNoteItem ? Style.space(2) : 0
@@ -774,7 +774,7 @@ Item {
                   Text {
                     anchors.centerIn: parent
                     text: "✓"
-                    color: Color.accent
+                    color: ShellColor.accent
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.small
                     font.bold: true
@@ -806,8 +806,8 @@ Item {
                   height: Style.space(24)
                   radius: Style.space(5)
                   visible: isEditingThis
-                  color: editCancelMouse.containsMouse ? Style.hoverFillFor(Color.urgent, Color.urgent) : "transparent"
-                  border.color: editCancelMouse.containsMouse ? Color.urgent : Util.alpha(Color.urgent, 0.4)
+                  color: editCancelMouse.containsMouse ? Style.hoverFillFor(ShellColor.urgent, ShellColor.urgent) : "transparent"
+                  border.color: editCancelMouse.containsMouse ? ShellColor.urgent : Util.alpha(ShellColor.urgent, 0.4)
                   border.width: 1
                   Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
                   Layout.topMargin: isNoteItem ? Style.space(2) : 0
@@ -815,7 +815,7 @@ Item {
                   Text {
                     anchors.centerIn: parent
                     text: "✕"
-                    color: Color.urgent
+                    color: ShellColor.urgent
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.small
                   }
@@ -838,8 +838,8 @@ Item {
                   height: Style.space(24)
                   radius: Style.space(5)
                   visible: isNoteItem && !isEditingThis && (cardHover.hovered || isItemFeedback)
-                  color: isItemFeedback ? Color.accent : (copyMouse.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent")
-                  border.color: isItemFeedback ? Color.accent : (copyMouse.containsMouse ? Util.alpha(root.foreground, 0.25) : "transparent")
+                  color: isItemFeedback ? ShellColor.accent : (copyMouse.containsMouse ? Style.hoverFillFor(root.foreground, ShellColor.accent) : "transparent")
+                  border.color: isItemFeedback ? ShellColor.accent : (copyMouse.containsMouse ? Util.alpha(root.foreground, 0.25) : "transparent")
                   border.width: 1
                   Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
                   Layout.topMargin: isNoteItem ? Style.space(2) : 0
@@ -848,7 +848,7 @@ Item {
                     id: copyLabel
                     anchors.centerIn: parent
                     text: isItemFeedback ? "✓" : "󰆏"
-                    color: isItemFeedback ? Color.popups.background : root.foreground
+                    color: isItemFeedback ? ShellColor.popups.background : root.foreground
                     font.family: root.fontFamily
                     font.pixelSize: isItemFeedback ? Style.font.small : Style.font.micro
                     font.bold: isItemFeedback
@@ -871,8 +871,8 @@ Item {
                   height: Style.space(24)
                   radius: Style.space(5)
                   visible: !isEditingThis && isHovered
-                  color: deleteMouse.containsMouse ? Style.hoverFillFor(Color.urgent, Color.urgent) : "transparent"
-                  border.color: deleteMouse.containsMouse ? Color.urgent : "transparent"
+                  color: deleteMouse.containsMouse ? Style.hoverFillFor(ShellColor.urgent, ShellColor.urgent) : "transparent"
+                  border.color: deleteMouse.containsMouse ? ShellColor.urgent : "transparent"
                   border.width: 1
                   Layout.alignment: isNoteItem ? Qt.AlignTop : Qt.AlignVCenter
                   Layout.topMargin: isNoteItem ? Style.space(2) : 0
@@ -880,7 +880,7 @@ Item {
                   Text {
                     anchors.centerIn: parent
                     text: "✕"
-                    color: deleteMouse.containsMouse ? Color.urgent : root.foreground
+                    color: deleteMouse.containsMouse ? ShellColor.urgent : root.foreground
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.small
                     font.bold: true
