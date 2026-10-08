@@ -20,8 +20,6 @@ fi
 if [ "$cmd" = "write" ]; then
     jsonP="$2"
     mdP="$3"
-    notes_json="$4"
-    tasks_json="$5"
     
     umask 0077
     
@@ -29,10 +27,12 @@ if [ "$cmd" = "write" ]; then
     mkdir -p "$dirP"
     chmod 0700 "$dirP"
     
-    jq -n -c --argjson n "$notes_json" --argjson t "$tasks_json" '{version: 1, notes: $n, tasks: $t}' > "$jsonP"
+    jq -n -c '{version: 1, notes: (env.NOTES_JSON | fromjson), tasks: (env.TASKS_JSON | fromjson)}' > "$jsonP"
     chmod 0600 "$jsonP"
     
-    jq -r -n --argjson n "$notes_json" --argjson t "$tasks_json" '
+    jq -r -n '
+    (env.NOTES_JSON | fromjson) as $n |
+    (env.TASKS_JSON | fromjson) as $t |
     def fmt_human(sec):
         if (sec == null or sec <= 0) then "0s"
         else

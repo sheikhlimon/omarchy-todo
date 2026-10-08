@@ -80,12 +80,11 @@ Item {
 
   function saveTasks() {
     root.dataVersion++
-    var data = {
-      version: 1,
-      notes: root.allNotes,
-      tasks: root.allTasks
+    writeProc.environment = {
+      "NOTES_JSON": JSON.stringify(root.allNotes || []),
+      "TASKS_JSON": JSON.stringify(root.allTasks || [])
     }
-    writeProc.exec([root.helperPath, "write", root.jsonPath, root.mdPath, JSON.stringify(root.allNotes), JSON.stringify(root.allTasks)])
+    writeProc.exec([root.helperPath, "write", root.jsonPath, root.mdPath])
   }
 
   function addTask(title) {
