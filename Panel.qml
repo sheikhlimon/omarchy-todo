@@ -72,7 +72,8 @@ Item {
 
   function copyToClipboard(text, id) {
     if (!text) return
-    copyProc.exec([root.helperPath, "copy", text])
+    copyProc.environment = { "COPY_TEXT": text }
+    copyProc.exec([root.helperPath, "copy"])
     root.feedbackTaskId = id || "global"
     root.copyFeedbackText = "✓ Copied!"
     feedbackTimer.restart()

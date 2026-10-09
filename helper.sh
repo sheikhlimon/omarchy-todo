@@ -3,7 +3,7 @@
 cmd="$1"
 
 if [ "$cmd" = "copy" ]; then
-    printf "%s" "$2" | wl-copy
+    printf "%s" "${COPY_TEXT}" | wl-copy
     exit 0
 fi
 
